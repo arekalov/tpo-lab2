@@ -6,6 +6,7 @@ import com.arekalov.tpolab2.functions.trig.Sec
 import com.arekalov.tpolab2.functions.trig.Sin
 import com.arekalov.tpolab2.functions.trig.Tan
 import java.util.stream.Stream
+import kotlin.math.PI
 import org.junit.jupiter.params.provider.Arguments
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
@@ -66,6 +67,9 @@ object StubTables {
             FinitePoint(-1.0, 0.4, 0.5403023058681398), // x из TrigSystemBranchTest; мок подставляет не cos(x), REFERENCE — для CosTest
             FinitePoint(-0.5, 1.0, 0.8775825618903728), // в Tan.TABLE здесь 0 — полюс триг-ветки; мок cos тоже «левый», REFERENCE — настоящий cos
             FinitePoint(-0.2, 1.0, 0.9800665778412416), // x для TrigSystemBranchTest (подмена модуля на AlwaysNull); REFERENCE — настоящий cos
+            FinitePoint(PI / 2, 0.0, 0.0), // cos=0: Sec/Tan → null; эталон cos(π/2)=0
+            FinitePoint(2.0 * PI, 0.5, 1.0), // reduce → 0; мок cos≠±1 → ветка sin при y=0 и ненулевом |sin|
+            FinitePoint(-5.0, 0.28366218546322625), // −5 % 2π < −π → ветка y += 2π в reduceToMinusPiPi; mock = эталон
         )
 
         val TABLE: Map<Double, Double> = POINTS.associate { it.x to it.mock }
@@ -87,8 +91,12 @@ object StubTables {
             private val xs: List<Double> by lazy { TABLE.keys.sorted() }
 
             val sinPairs: List<Pair<Double, Double>> by lazy { xs.map { x -> x to sinM.compute(x)!! } }
-            val secPairs: List<Pair<Double, Double>> by lazy { xs.map { x -> x to secM.compute(x)!! } }
-            val tanPairs: List<Pair<Double, Double>> by lazy { xs.map { x -> x to tanM.compute(x)!! } }
+            val secPairs: List<Pair<Double, Double>> by lazy {
+                xs.mapNotNull { x -> secM.compute(x)?.let { x to it } }
+            }
+            val tanPairs: List<Pair<Double, Double>> by lazy {
+                xs.mapNotNull { x -> tanM.compute(x)?.let { x to it } }
+            }
             val cscPairs: List<Pair<Double, Double>> by lazy {
                 xs.mapNotNull { x -> cscM.compute(x)?.let { x to it } }
             }

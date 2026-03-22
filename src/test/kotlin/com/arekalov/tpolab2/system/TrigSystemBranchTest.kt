@@ -1,10 +1,14 @@
 package com.arekalov.tpolab2.system
 
+import com.arekalov.tpolab2.functions.FunctionModule
 import com.arekalov.tpolab2.testutil.StubTables
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 
 @DisplayName("TrigSystemBranch: формула ветки, особые точки")
 class TrigSystemBranchTest {
@@ -59,5 +63,41 @@ class TrigSystemBranchTest {
         assertNull(TrigSystemBranch(okSec, okSin, bad, okCsc, okTan).compute(x))
         assertNull(TrigSystemBranch(okSec, okSin, okCos, bad, okTan).compute(x))
         assertNull(TrigSystemBranch(okSec, okSin, okCos, okCsc, bad).compute(x))
+    }
+
+    @Test
+    @DisplayName("null при втором вызове sec.compute")
+    fun `null when second sec call returns null`() {
+        val sec = mock<FunctionModule>()
+        whenever(sec.moduleId).thenReturn("sec")
+        whenever(sec.compute(any())).thenReturn(1.0).thenReturn(null)
+        val stub = StubTables.Sin.module
+        assertNull(TrigSystemBranch(sec, stub, stub, stub, stub).compute(0.0))
+    }
+
+    @Test
+    @DisplayName("null при третьем вызове sec.compute")
+    fun `null when third sec call returns null`() {
+        val sec = mock<FunctionModule>()
+        whenever(sec.moduleId).thenReturn("sec")
+        whenever(sec.compute(any())).thenReturn(1.0).thenReturn(1.0).thenReturn(null)
+        val stub = StubTables.Sin.module
+        assertNull(TrigSystemBranch(sec, stub, stub, stub, stub).compute(0.0))
+    }
+
+    @Test
+    @DisplayName("null при втором вызове sin.compute")
+    fun `null when second sin call returns null`() {
+        val sec = mock<FunctionModule>()
+        val sin = mock<FunctionModule>()
+        val cos = mock<FunctionModule>()
+        whenever(sec.moduleId).thenReturn("sec")
+        whenever(sin.moduleId).thenReturn("sin")
+        whenever(cos.moduleId).thenReturn("cos")
+        whenever(sec.compute(any())).thenReturn(1.0)
+        whenever(sin.compute(any())).thenReturn(1.0).thenReturn(null)
+        whenever(cos.compute(any())).thenReturn(1.0)
+        val unused = mock<FunctionModule>()
+        assertNull(TrigSystemBranch(sec, sin, cos, unused, unused).compute(0.0))
     }
 }

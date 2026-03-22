@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -58,9 +59,15 @@ class CosTest {
     @Test
     @DisplayName("Конструктор отклоняет неположительный epsilon")
     fun `init rejects non positive epsilon`() {
-        org.junit.jupiter.api.assertThrows<IllegalArgumentException> {
-            Cos(0.0)
-        }
+        assertThrows<IllegalArgumentException> { Cos(0.0) }
+        assertThrows<IllegalArgumentException> { Cos(-1.0) }
+    }
+
+    @Test
+    @DisplayName("Конструктор отклоняет неположительный maxTerms")
+    fun `init rejects non positive maxTerms`() {
+        assertThrows<IllegalArgumentException> { Cos(epsilon = TEST_EPS, maxTerms = 0) }
+        assertThrows<IllegalArgumentException> { Cos(epsilon = TEST_EPS, maxTerms = -1) }
     }
 
     @Test

@@ -38,6 +38,10 @@ kover {
                     "*\$\$inlined\$*",
                     "*\$lambda\$*",
                     "com.arekalov.tpolab2.MainKt",
+                    "com.arekalov.tpolab2.csv.*",
+                    "com.arekalov.tpolab2.system.SystemFactoryKt",
+                    "com.arekalov.tpolab2.system.WiredModules",
+                    "com.arekalov.tpolab2.system.WiredModulesKt",
                 )
                 annotatedBy(
                     "*Generated*",
