@@ -17,6 +17,9 @@ repositories {
 }
 
 dependencies {
+    implementation("org.jetbrains.kotlinx:kandy-lets-plot:0.8.3")
+    runtimeOnly("org.slf4j:slf4j-nop:2.0.16")
+
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.8")
 
     testImplementation(kotlin("test"))
