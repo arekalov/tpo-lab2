@@ -1,58 +1,63 @@
 package com.arekalov.tpolab2.system
 
-import com.arekalov.tpolab2.functions.FunctionModule
-import com.arekalov.tpolab2.mockReturningAt
+import com.arekalov.tpolab2.testutil.StubTables
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
 
 @DisplayName("TrigSystemBranch: формула ветки, особые точки")
 class TrigSystemBranchTest {
 
     @Test
+    @DisplayName("Формула ветки на ручных значениях табличных заглушек в одной точке")
     fun `hand stub values at x0`() {
-        val x0 = -1.0
-        val sec = mockReturningAt("sec", x0, 1.2)
-        val sin = mockReturningAt("sin", x0, 0.3)
-        val cos = mockReturningAt("cos", x0, 0.4)
-        val csc = mockReturningAt("csc", x0, 2.0)
-        val tan = mockReturningAt("tan", x0, 0.5)
-        val branch = TrigSystemBranch(sec, sin, cos, csc, tan)
-        val inner = (1.2 - 1.2) + 1.2 * 0.3
-        val numLeft = inner * 0.4
-        val numerator = numLeft - 0.3 * 2.0
-        val expected = numerator / 0.5
-        assertEquals(expected, branch.compute(x0)!!, 1e-12)
+        val x = -1.0
+        val branch = TrigSystemBranch(
+            StubTables.Sec.module,
+            StubTables.Sin.module,
+            StubTables.Cos.module,
+            StubTables.Csc.module,
+            StubTables.Tan.module,
+        )
+        val sec = StubTables.Sec.TABLE.getValue(x)
+        val sin = StubTables.Sin.TABLE.getValue(x)
+        val cos = StubTables.Cos.TABLE.getValue(x)
+        val csc = StubTables.Csc.TABLE.getValue(x)
+        val tan = StubTables.Tan.TABLE.getValue(x)
+        val inner = (sec - sec) + sec * sin
+        val expected = (inner * cos - sin * csc) / tan
+        assertEquals(expected, branch.compute(x)!!, 1e-12)
     }
 
     @Test
+    @DisplayName("Если tan(x) = 0 (знаменатель), результат не определён — null")
     fun `undefined when tan is zero`() {
-        val x0 = -0.5
-        val stub = mockReturningAt("stub", x0, 1.0)
-        val zeroTan = mock<FunctionModule>()
-        whenever(zeroTan.moduleId).thenReturn("zeroTan")
-        whenever(zeroTan.compute(any())).thenAnswer { inv ->
-            if (inv.getArgument<Double>(0) == x0) 0.0 else null
-        }
-        val branch = TrigSystemBranch(stub, stub, stub, stub, zeroTan)
-        assertNull(branch.compute(x0))
+        val x = -0.5
+        val branch = TrigSystemBranch(
+            StubTables.Sec.module,
+            StubTables.Sin.module,
+            StubTables.Cos.module,
+            StubTables.Csc.module,
+            StubTables.Tan.module,
+        )
+        assertNull(branch.compute(x))
     }
 
     @Test
+    @DisplayName("Если любой из модулей возвращает null, ветка возвращает null")
     fun `undefined when any dependency null`() {
-        val x0 = -0.2
-        val ok = mockReturningAt("ok", x0, 1.0)
-        val bad = mock<FunctionModule>()
-        whenever(bad.moduleId).thenReturn("bad")
-        whenever(bad.compute(any())).thenReturn(null)
-        assertNull(TrigSystemBranch(bad, ok, ok, ok, ok).compute(x0))
-        assertNull(TrigSystemBranch(ok, bad, ok, ok, ok).compute(x0))
-        assertNull(TrigSystemBranch(ok, ok, bad, ok, ok).compute(x0))
-        assertNull(TrigSystemBranch(ok, ok, ok, bad, ok).compute(x0))
-        assertNull(TrigSystemBranch(ok, ok, ok, ok, bad).compute(x0))
+        val x = -0.2
+        val okSec = StubTables.Sec.module
+        val okSin = StubTables.Sin.module
+        val okCos = StubTables.Cos.module
+        val okCsc = StubTables.Csc.module
+        val okTan = StubTables.Tan.module
+        val bad = StubTables.AlwaysNull.module
+        assertNull(TrigSystemBranch(bad, okSin, okCos, okCsc, okTan).compute(x))
+        assertNull(TrigSystemBranch(okSec, bad, okCos, okCsc, okTan).compute(x))
+        assertNull(TrigSystemBranch(okSec, okSin, bad, okCsc, okTan).compute(x))
+        assertNull(TrigSystemBranch(okSec, okSin, okCos, bad, okTan).compute(x))
+        assertNull(TrigSystemBranch(okSec, okSin, okCos, okCsc, bad).compute(x))
     }
 }

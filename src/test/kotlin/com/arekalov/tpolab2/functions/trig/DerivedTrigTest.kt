@@ -1,12 +1,8 @@
 package com.arekalov.tpolab2.functions.trig
 
 import com.arekalov.tpolab2.REF_TOLERANCE
-import com.arekalov.tpolab2.TEST_EPS
-import com.arekalov.tpolab2.functions.core.Cos
-import kotlin.math.PI
-import kotlin.math.cos
-import kotlin.math.sin
-import kotlin.math.tan
+import com.arekalov.tpolab2.testutil.StubTables
+import java.util.stream.Stream
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.DisplayName
@@ -16,73 +12,88 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.junit.jupiter.params.provider.ValueSource
 
-@DisplayName("Sin / Sec / Tan / Csc через Cos")
+/** Зависимость cos — [StubTables.Cos.module]; эталоны — [StubTables.Cos.Derived]. */
+@DisplayName("Sin / Sec / Tan / Csc через табличный стаб cos")
 class DerivedTrigTest {
 
-    private val cosMod = Cos(TEST_EPS)
+    private val cosMod = StubTables.Cos.module
     private val sinMod = Sin(cosMod)
     private val secMod = Sec(cosMod)
     private val tanMod = Tan(sinMod, cosMod)
     private val cscMod = Csc(sinMod)
 
-    @ParameterizedTest(name = "x={0}")
-    @MethodSource("angles")
-    fun `sin matches reference`(x: Double) {
-        assertEquals(sin(x), sinMod.compute(x)!!, REF_TOLERANCE)
+    companion object {
+        @JvmStatic
+        fun sinStubRows(): Stream<Arguments> =
+            Stream.of(
+                *StubTables.Cos.Derived.sinPairs
+                    .map { (x, expected) -> Arguments.of(x, expected) }
+                    .toTypedArray(),
+            )
+
+        @JvmStatic
+        fun secStubRows(): Stream<Arguments> =
+            Stream.of(
+                *StubTables.Cos.Derived.secPairs
+                    .map { (x, expected) -> Arguments.of(x, expected) }
+                    .toTypedArray(),
+            )
+
+        @JvmStatic
+        fun tanStubRows(): Stream<Arguments> =
+            Stream.of(
+                *StubTables.Cos.Derived.tanPairs
+                    .map { (x, expected) -> Arguments.of(x, expected) }
+                    .toTypedArray(),
+            )
+
+        @JvmStatic
+        fun cscStubRows(): Stream<Arguments> =
+            Stream.of(
+                *StubTables.Cos.Derived.cscPairs
+                    .map { (x, expected) -> Arguments.of(x, expected) }
+                    .toTypedArray(),
+            )
+    }
+
+    @DisplayName("sin: совпадение с эталоном по узлам [StubTables.Cos.TABLE]")
+    @ParameterizedTest(name = "x = {0}")
+    @MethodSource("sinStubRows")
+    fun `sin matches reference table`(x: Double, expected: Double) {
+        assertEquals(expected, sinMod.compute(x)!!, REF_TOLERANCE)
+    }
+
+    @DisplayName("sec: совпадение с эталоном по узлам [StubTables.Cos.TABLE]")
+    @ParameterizedTest(name = "x = {0}")
+    @MethodSource("secStubRows")
+    fun `sec matches reference table`(x: Double, expected: Double) {
+        assertEquals(expected, secMod.compute(x)!!, REF_TOLERANCE)
+    }
+
+    @DisplayName("tan: совпадение с эталоном по узлам [StubTables.Cos.TABLE]")
+    @ParameterizedTest(name = "x = {0}")
+    @MethodSource("tanStubRows")
+    fun `tan matches reference table`(x: Double, expected: Double) {
+        assertEquals(expected, tanMod.compute(x)!!, REF_TOLERANCE)
     }
 
     @Test
-    fun `sin near zero uses small magnitude branch`() {
-        val x = 1e-15
-        assertEquals(sin(x), sinMod.compute(x)!!, 1e-12)
+    @DisplayName("csc(0): полюс, возвращается null")
+    fun `csc pole at zero`() {
+        assertNull(cscMod.compute(0.0))
     }
 
-    @ParameterizedTest(name = "x={0}")
-    @MethodSource("angles")
-    fun `sec matches reference`(x: Double) {
-        val c = cos(x)
-        if (c == 0.0) {
-            assertNull(secMod.compute(x))
-        } else {
-            assertEquals(1.0 / c, secMod.compute(x)!!, REF_TOLERANCE)
-        }
+    @DisplayName("csc: совпадение с эталоном (узлы, где sin ≠ 0)")
+    @ParameterizedTest(name = "x = {0}")
+    @MethodSource("cscStubRows")
+    fun `csc matches reference table`(x: Double, expected: Double) {
+        assertEquals(expected, cscMod.compute(x)!!, REF_TOLERANCE)
     }
 
-    @ParameterizedTest(name = "x={0}")
-    @MethodSource("angles")
-    fun `tan matches reference`(x: Double) {
-        val c = cos(x)
-        if (c == 0.0) {
-            assertNull(tanMod.compute(x))
-        } else {
-            assertEquals(tan(x), tanMod.compute(x)!!, REF_TOLERANCE)
-        }
-    }
-
-    @ParameterizedTest(name = "x={0}")
-    @MethodSource("angles")
-    fun `csc matches reference`(x: Double) {
-        val s = sin(x)
-        if (s == 0.0) {
-            assertNull(cscMod.compute(x))
-        } else {
-            assertEquals(1.0 / s, cscMod.compute(x)!!, REF_TOLERANCE)
-        }
-    }
-
-    @ParameterizedTest
+    @DisplayName("sin для NaN и бесконечности возвращает null")
+    @ParameterizedTest(name = "аргумент: {0}")
     @ValueSource(doubles = [Double.NaN, Double.POSITIVE_INFINITY])
     fun `sin rejects non finite`(x: Double) {
         assertNull(sinMod.compute(x))
-    }
-
-    companion object {
-        @JvmStatic
-        fun angles() = listOf(
-            Arguments.of(-1.1),
-            Arguments.of(0.3),
-            Arguments.of(PI / 6),
-            Arguments.of(-PI / 2 + 0.01),
-        )
     }
 }

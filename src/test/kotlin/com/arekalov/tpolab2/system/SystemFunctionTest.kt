@@ -15,6 +15,7 @@ import org.mockito.kotlin.whenever
 class SystemFunctionTest {
 
     @Test
+    @DisplayName("x ≤ 0: вызывается тригонометрическая ветка")
     fun `routes to trig for non positive x`() {
         val trig = mock<FunctionModule>()
         val log = mock<FunctionModule>()
@@ -41,7 +42,8 @@ class SystemFunctionTest {
         assertEquals(22.0, sys.compute(0.5))
     }
 
-    @ParameterizedTest
+    @DisplayName("Неконечный x (NaN, ±∞): система возвращает null")
+    @ParameterizedTest(name = "{0}")
     @CsvSource("NaN", "Infinity", "-Infinity")
     fun `non finite x returns null`(token: String) {
         val x = when (token) {
@@ -58,6 +60,7 @@ class SystemFunctionTest {
     }
 
     @Test
+    @DisplayName("null от выбранной ветки пробрасывается наружу")
     fun `branch null propagates`() {
         val a = mock<FunctionModule>()
         val b = mock<FunctionModule>()
