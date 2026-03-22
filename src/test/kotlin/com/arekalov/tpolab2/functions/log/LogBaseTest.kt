@@ -2,6 +2,7 @@ package com.arekalov.tpolab2.functions.log
 
 import com.arekalov.tpolab2.functions.FunctionModule
 import com.arekalov.tpolab2.testutil.StubTables
+import java.util.stream.Stream
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.DisplayName
@@ -13,20 +14,68 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
-import java.util.stream.Stream
 
 @DisplayName("LogBase: инициализация и log_base(x), ln — мок")
 class LogBaseTest {
 
     private val lnModule: FunctionModule = StubTables.Ln.module
 
-
-    @DisplayName("log_base(x): целые степени и log_b(1) = 0 (ожидание из таблицы ln-стаба)")
-    @ParameterizedTest(name = "основание {0}, x = {1} → {2}")
-    @MethodSource("com.arekalov.tpolab2.testutil.StubTables\$Sources#logBaseCases")
-    fun `log base identity`(base: Double, x: Double, expected: Double) {
+    private fun assertLogBase(base: Double, x: Double) {
         val logB = LogBase(lnModule, base, "log${base.toInt()}")
-        assertEquals(expected, logB.compute(x)!!, 1e-5)
+        assertEquals(StubTables.Ln.logBaseExpected(base, x), logB.compute(x)!!, 1e-5)
+    }
+
+    companion object {
+        /** Узлы x — как в [StubTables.Log2.TABLE]; ожидание ln(x)/ln(2) по [StubTables.Ln.TABLE]. */
+        @JvmStatic
+        fun log2Nodes(): Stream<Arguments> =
+            Stream.of(
+                *StubTables.Log2.TABLE.keys
+                    .sorted()
+                    .map { x -> Arguments.of(x) }
+                    .toTypedArray(),
+            )
+
+        /** Узлы x — как в [StubTables.Log10.TABLE]. */
+        @JvmStatic
+        fun log10Nodes(): Stream<Arguments> =
+            Stream.of(
+                *StubTables.Log10.TABLE.keys
+                    .sorted()
+                    .map { x -> Arguments.of(x) }
+                    .toTypedArray(),
+            )
+
+        /** Узлы x — как в [StubTables.Log3.TABLE]. */
+        @JvmStatic
+        fun log3Nodes(): Stream<Arguments> =
+            Stream.of(
+                *StubTables.Log3.TABLE.keys
+                    .sorted()
+                    .map { x -> Arguments.of(x) }
+                    .toTypedArray(),
+            )
+    }
+
+    @DisplayName("log₂: все узлы сетки Log2 (x из StubTables.Log2.TABLE)")
+    @ParameterizedTest(name = "x = {0}")
+    @MethodSource("log2Nodes")
+    fun `log2 matches ln ratio on Log2 grid`(x: Double) {
+        assertLogBase(2.0, x)
+    }
+
+    @DisplayName("log₁₀: все узлы сетки Log10")
+    @ParameterizedTest(name = "x = {0}")
+    @MethodSource("log10Nodes")
+    fun `log10 matches ln ratio on Log10 grid`(x: Double) {
+        assertLogBase(10.0, x)
+    }
+
+    @DisplayName("log₃: все узлы сетки Log3")
+    @ParameterizedTest(name = "x = {0}")
+    @MethodSource("log3Nodes")
+    fun `log3 matches ln ratio on Log3 grid`(x: Double) {
+        assertLogBase(3.0, x)
     }
 
     @Test

@@ -1,9 +1,7 @@
 package com.arekalov.tpolab2.testutil
 
 import com.arekalov.tpolab2.functions.FunctionModule
-import java.util.stream.Stream
 import kotlin.math.PI
-import org.junit.jupiter.params.provider.Arguments
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
@@ -88,23 +86,6 @@ object StubTables {
 
         /** ln(x)/ln(base) по моку — для [com.arekalov.tpolab2.functions.log.LogBaseTest]. */
         fun logBaseExpected(base: Double, x: Double): Double = TABLE.getValue(x)!! / TABLE.getValue(base)!!
-    }
-
-    /** Фабрики аргументов для JUnit MethodSource; числа из [Ln]. */
-    class Sources {
-        companion object {
-            @JvmStatic
-            fun logBaseCases(): Stream<Arguments> =
-                Stream.of(
-                    Arguments.of(2.0, 8.0, Ln.logBaseExpected(2.0, 8.0)),
-                    Arguments.of(2.0, 1.0, Ln.logBaseExpected(2.0, 1.0)),
-                    Arguments.of(3.0, 9.0, Ln.logBaseExpected(3.0, 9.0)),
-                    Arguments.of(3.0, 27.0, Ln.logBaseExpected(3.0, 27.0)),
-                    Arguments.of(10.0, 100.0, Ln.logBaseExpected(10.0, 100.0)),
-                    Arguments.of(10.0, 1000.0, Ln.logBaseExpected(10.0, 1000.0)),
-                    Arguments.of(3.0, 5.5, Ln.logBaseExpected(3.0, 5.5)),
-                )
-        }
     }
 
     /**
