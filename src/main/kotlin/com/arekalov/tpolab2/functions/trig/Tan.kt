@@ -1,6 +1,7 @@
 package com.arekalov.tpolab2.functions.trig
 
 import com.arekalov.tpolab2.functions.FunctionModule
+import kotlin.math.abs
 
 /**
  * **tan(x) = sin(x) / cos(x)** — тангенс через уже собранные [sin] и [cos].
@@ -17,7 +18,7 @@ class Tan(
     override fun compute(x: Double): Double? {
         val s = sin.compute(x) ?: return null
         val c = cos.compute(x) ?: return null
-        if (c == 0.0) {
+        if (abs(c) < 1e-10) {
             return null
         }
         return s / c

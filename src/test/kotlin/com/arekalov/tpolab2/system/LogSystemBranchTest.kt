@@ -40,7 +40,7 @@ class LogSystemBranchTest {
             )
     }
 
-    @DisplayName("Ветка vs [StubTables.LogBranch.TABLE] (null — не определено)")
+    @DisplayName("Параметризованные тесты на ветку log)")
     @ParameterizedTest(name = "x = {0}, expected = {1}")
     @MethodSource("logBranchTableRows")
     fun `branch formula matches tables on grid`(x: Double, expected: Double?) {

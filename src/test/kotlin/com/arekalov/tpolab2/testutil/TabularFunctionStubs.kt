@@ -53,6 +53,14 @@ object StubTables {
             PI / 2 to 0.0, // граничный случай: cos(π/2)=0; SinTest/SecTest/TanTest/CscTest Sec/Tan → null
             2.0 * PI to 1.0, // x=2π: CosTest, SinTest/SecTest/TanTest/CscTest; cos(2π), приведение угла
             -5.0 to 0.28366218546322625, // x=-5: CosTest, TrigAngleReductionTest; остаток по 2π, ветка reduce
+            -3.141592653589793 to -1.0,
+            -1.5707963267948966 to 6.123233995736766E-17,
+            -0.7853981633974483 to 0.7071067811865476,
+            -0.5235987755982988 to 0.8660254037844387,
+            -1.0E-7 to 1.0,
+            0.0 to 1.0,
+            1.0 to 0.540302305868,
+            -1000.0 to 0.5623790762907029,
         )
 
         val module: FunctionModule = moduleFromFiniteTable("cos", TABLE)
@@ -80,6 +88,14 @@ object StubTables {
             -0.2 to 1.0203388449411928, // x=-0.2: TrigSystemBranchTest, SystemIntegrationTest, SecTest
             2.0 * PI to 1.0, // x=2π: SecTest; приведение угла
             -5.0 to 3.5253200858160887, // x=-5: SecTest, TrigAngleReductionTest
+            -3.141592653589793 to -1.0,
+            -1.5707963267948966 to 1.633123935319537E16,
+            -0.7853981633974483 to 1.414213562373095,
+            -0.5235987755982988 to 1.1547005383792515,
+            -1.0E-7 to 1.000000000000005,
+            0.0 to 1.0,
+            1.0 to 1.8508157176809255,
+            -1000.0 to 1.7781600385912715,
         )
         val module: FunctionModule = moduleFromFiniteTable("sec", TABLE)
     }
@@ -88,8 +104,9 @@ object StubTables {
      * Ожидаемый sin при том же x, что [Cos.TABLE], если cos берётся из [Cos.module] (цепочка [com.arekalov.tpolab2.functions.trig.Sin]).
      */
     object Sin {
-        val TABLE: Map<Double, Double> = mapOf(
+        val TABLE: Map<Double, Double?> = mapOf(
             0.0 to 0.0, // x=0: sin(0)=0; SinTest, узел около нуля
+            1.0 to 0.8414709848078965, //  важное значение
             0.3 to 0.29552020666133966, // x=0.3: SinTest; промежуточный угол
             0.5235987755982988 to 0.5, // x=π/6: SinTest
             -1.1 to -0.8912073600614354, // x=-1.1: SinTest; отрицательный аргумент
@@ -107,6 +124,13 @@ object StubTables {
             PI / 2 to 1.0, // x=π/2: sin(π/2)=1; SinTest
             2.0 * PI to 0.0, // x=2π: SinTest; приведение угла
             -5.0 to 0.9589242746631385, // x=-5: SinTest, TrigAngleReductionTest
+            -3.141592653589793 to -1.2246467991473532E-16,
+            -1.5707963267948966 to -1.0,
+            -0.7853981633974483 to -0.7071067811865475,
+            -0.5235987755982988 to -0.49999999999999994,
+            -1.0E-7 to 1.0E-7,
+            0.0 to 0.0,
+            -1000.0 to -0.8268795405320025,
         )
         val module: FunctionModule = moduleFromFiniteTable("sin", TABLE)
     }
@@ -115,7 +139,7 @@ object StubTables {
      * 1/sin на тех же x, что [Sin.TABLE], без узлов с sin=0 (полюс csc); согласовано с [Cos.module].
      */
     object Csc {
-        val TABLE: Map<Double, Double> = mapOf(
+        val TABLE: Map<Double, Double?> = mapOf(
             0.3 to 3.3838633618241216, // x=0.3: CscTest
             0.5235987755982988 to 2.0, // x=π/6: CscTest
             -1.1 to -1.1220733185272, // x=-1.1: CscTest
@@ -131,6 +155,15 @@ object StubTables {
             -0.2 to -5.033489547672345, // x=-0.2: TrigSystemBranchTest, CscTest
             PI / 2 to 1.0, // x=π/2: csc(π/2)=1; CscTest
             -5.0 to 1.0428352127714058, // x=-5: CscTest
+            -3.141592653589793 to -8.165619676597685E15,
+            -1.5707963267948966 to -1.0,
+            -0.7853981633974483 to -1.4142135623730951,
+            -0.5235987755982988 to -2.0000000000000004,
+            -1.0E-7 to -1.0000000000000017E7,
+            -1.0E-7 to 10000000.0,
+            0.0 to null,
+            1.0 to 1.1883951057781212,
+            -1000.0 to -1.20936599707935,
         )
         val module: FunctionModule = moduleFromFiniteTable("csc", TABLE)
     }
@@ -139,7 +172,7 @@ object StubTables {
      * sin/cos на узлах [Cos.TABLE]; без x=π/2 (tan не определён при cos=0 в [com.arekalov.tpolab2.functions.trig.Tan]).
      */
     object Tan {
-        val TABLE: Map<Double, Double> = mapOf(
+        val TABLE: Map<Double, Double?> = mapOf(
             0.0 to 0.0, // x=0: TanTest
             0.3 to 0.3093362496096233, // x=0.3: TanTest
             0.5235987755982988 to 0.5773502691896256, // x=π/6: TanTest
@@ -157,6 +190,14 @@ object StubTables {
             -0.2 to -0.20271003550867245, // x=-0.2: TrigSystemBranchTest, TanTest
             2.0 * PI to 0.0, // x=2π: TanTest
             -5.0 to 3.380515006246586, // x=-5: TanTest
+            -3.141592653589793 to 1.2246467991473532E-16,
+            -1.5707963267948966 to null,
+            -0.7853981633974483 to -0.9999999999999999,
+            -0.5235987755982988 to -0.5773502691896257,
+            -1.0E-7 to -1.0000000000000033E-7,
+            0.0 to 0.0,
+            1.0 to 1.5574077246549023,
+            -1000.0 to -1.4703241557027185,
         )
         val module: FunctionModule = moduleFromFiniteTable("tan", TABLE)
     }
@@ -193,9 +234,9 @@ object StubTables {
 
         /** ln(x)/ln(base) по моку — для [com.arekalov.tpolab2.functions.log.LogBaseTest]. */
         fun logBaseExpected(base: Double, x: Double): Double? {
-            val a = TABLE.getValue(x)?: return null
-            val b = TABLE.getValue(base)?: return null
-            return a/ b
+            val a = TABLE.getValue(x) ?: return null
+            val b = TABLE.getValue(base) ?: return null
+            return a / b
         }
     }
 
@@ -261,12 +302,26 @@ object StubTables {
     object LogBranch {
         val TABLE: Map<Double, Double?> = mapOf(
             0.000_000_1 to 178.8925723,
-            0.0 to null, // ln(0)=null в стабе
-            1.0 to 0.0, // log2/log10=0, ln(1)=0, log3(1)=1 → ветка 0
-            3.0 to null, // log3(3)=0 в стабе → знаменатель 0, ветка null
+            0.0 to null,
+            1.0 to 0.0,
+            3.0 to null,
             4.93341 to 0.0,
             100.0 to 8.68254219356,
             1_000_000.0 to 105.773900858,
+        )
+        val module: FunctionModule = moduleFromFiniteTable("trigBranch", TABLE)
+    }
+
+    object TrigBranch {
+        val TABLE: Map<Double, Double?> = mapOf(
+            0.0 to null,
+            -PI to null,
+            -PI / 2 to null,
+            1.0 to null,
+            -1.0 to 1.1823949218,
+            -PI / 4 to 1.70710678119,
+            -PI / 6 to 2.59807621135,
+            -1_000.0 to 1.24250120863,
         )
         val module: FunctionModule = moduleFromFiniteTable("trigBranch", TABLE)
     }

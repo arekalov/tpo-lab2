@@ -7,35 +7,48 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import java.util.stream.Stream
 
 @DisplayName("TrigSystemBranch: формула ветки, особые точки")
 class TrigSystemBranchTest {
 
+    val branch = TrigSystemBranch(
+        StubTables.Sec.module,
+        StubTables.Sin.module,
+        StubTables.Cos.module,
+        StubTables.Csc.module,
+        StubTables.Tan.module,
+    )
+
+    companion object {
+        /** Строки [StubTables.LogBranch.TABLE]: `expected == null` — ждём `null` от ветки (JUnit не подставляет null в `double`). */
+        @JvmStatic
+        fun trigBranchTableRows(): Stream<Arguments> =
+            Stream.of(
+                *StubTables.TrigBranch.TABLE.entries
+                    .sortedBy { it.key }
+                    .map { (x, expected) -> Arguments.of(x, expected) }
+                    .toTypedArray(),
+            )
+    }
 
 
-    @Test
-    @DisplayName("Формула ветки на ручных значениях табличных заглушек в одной точке")
-    fun `hand stub values at x0`() {
-        val x = -1.0
-        val branch = TrigSystemBranch(
-            StubTables.Sec.module,
-            StubTables.Sin.module,
-            StubTables.Cos.module,
-            StubTables.Csc.module,
-            StubTables.Tan.module,
-        )
-        val sec = StubTables.Sec.TABLE.getValue(x)
-        val sin = StubTables.Sin.TABLE.getValue(x)
-        val cos = StubTables.Cos.TABLE.getValue(x)
-        val csc = StubTables.Csc.TABLE.getValue(x)
-        val tan = StubTables.Tan.TABLE.getValue(x)
-        val inner = (sec - sec) + sec * sin
-        val expected = (inner * cos - sin * csc) / tan
-        assertEquals(expected, branch.compute(x)!!, REF_TOLERANCE)
+    @DisplayName("Параметризованные тесты на ветку trig")
+    @ParameterizedTest(name = "x = {0}, expected = {1}")
+    @MethodSource("trigBranchTableRows")
+    fun `hand stub values at x0`(x: Double, expected: Double?) {
+        if (expected == null) {
+            assertNull(branch.compute(x))
+        } else {
+            assertEquals(expected, branch.compute(x)!!, REF_TOLERANCE)
+        }
     }
 
     @Test

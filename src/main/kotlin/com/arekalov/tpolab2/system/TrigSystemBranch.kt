@@ -1,6 +1,7 @@
 package com.arekalov.tpolab2.system
 
 import com.arekalov.tpolab2.functions.FunctionModule
+import kotlin.math.abs
 
 /**
  * Тригонометрическая ветка из варианта (x ≤ 0), без алгебраического упрощения скобок.
@@ -16,6 +17,7 @@ class TrigSystemBranch(
     override val moduleId = "trigBranch"
 
     override fun compute(x: Double): Double? {
+        if (x > 0) return null
         val sec1 = sec.compute(x) ?: return null
         val sec2 = sec.compute(x) ?: return null
         val sec3 = sec.compute(x) ?: return null
@@ -27,9 +29,8 @@ class TrigSystemBranch(
         val cscV = csc.compute(x) ?: return null
         val numerator = numLeft - sin2 * cscV
         val tanV = tan.compute(x) ?: return null
-        if (tanV == 0.0) {
-            return null
-        }
-        return numerator / tanV
+        val result = numerator / tanV
+        if (abs(result) > 1e12) return null
+        return result
     }
 }

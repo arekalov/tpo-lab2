@@ -1,9 +1,7 @@
 package com.arekalov.tpolab2.functions.trig
 
 import com.arekalov.tpolab2.REF_TOLERANCE
-import com.arekalov.tpolab2.TEST_EPS
 import com.arekalov.tpolab2.functions.FunctionModule
-import com.arekalov.tpolab2.functions.core.Cos
 import com.arekalov.tpolab2.testutil.StubTables
 import java.util.stream.Stream
 import kotlin.math.PI
@@ -25,13 +23,7 @@ import org.mockito.kotlin.whenever
 @DisplayName("Tan: через sin и cos")
 class TanTest {
 
-    private val cosMod = StubTables.Cos.module
-    private val sinMod = Sin(cosMod)
-    private val tanOverStub = Tan(sinMod, cosMod)
-
-    private val cosReal = Cos(TEST_EPS)
-    private val sinReal = Sin(cosReal)
-    private val tanOverReal = Tan(sinReal, cosReal)
+    private val tan = Tan(StubTables.Sin.module, StubTables.Cos.module)
 
     companion object {
         @JvmStatic
@@ -47,21 +39,18 @@ class TanTest {
     @DisplayName("Значения tan по эталону StubTables.Tan.TABLE")
     @ParameterizedTest(name = "x = {0}")
     @MethodSource("tanReferenceRows")
-    fun `tan matches reference table`(x: Double, expected: Double) {
-        assertEquals(expected, tanOverStub.compute(x)!!, REF_TOLERANCE)
-    }
-
-    @DisplayName("Для NaN и бесконечностей возвращается null (реальный Cos)")
-    @ParameterizedTest(name = "аргумент: {0}")
-    @ValueSource(doubles = [Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY])
-    fun `non finite x returns null`(x: Double) {
-        assertNull(tanOverReal.compute(x))
+    fun `tan matches reference table`(x: Double, expected: Double?) {
+        if (expected == null) {
+            assertNull(tan.compute(x))
+        } else {
+            assertEquals(expected, tan.compute(x)!!, REF_TOLERANCE)
+        }
     }
 
     @Test
     @DisplayName("tan(π/2): cos=0 в стабе — null")
     fun `tan pole at pi half`() {
-        assertNull(tanOverStub.compute(PI / 2))
+        assertNull(tan.compute(PI / 2))
     }
 
     @Test

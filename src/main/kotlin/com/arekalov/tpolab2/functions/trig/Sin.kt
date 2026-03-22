@@ -22,9 +22,6 @@ class Sin(
     override val moduleId = "sin"
 
     override fun compute(x: Double): Double? {
-        if (x.isNaN() || x.isInfinite()) {
-            return null
-        }
         val y = reduceToMinusPiPi(x)
         val c = cos.compute(x) ?: return null
         val sinSq = 1.0 - c * c

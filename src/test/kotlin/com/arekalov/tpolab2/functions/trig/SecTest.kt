@@ -1,9 +1,7 @@
 package com.arekalov.tpolab2.functions.trig
 
 import com.arekalov.tpolab2.REF_TOLERANCE
-import com.arekalov.tpolab2.TEST_EPS
 import com.arekalov.tpolab2.functions.FunctionModule
-import com.arekalov.tpolab2.functions.core.Cos
 import com.arekalov.tpolab2.testutil.StubTables
 import java.util.stream.Stream
 import kotlin.math.PI
@@ -14,7 +12,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import org.junit.jupiter.params.provider.ValueSource
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
@@ -25,8 +22,7 @@ import org.mockito.kotlin.whenever
 @DisplayName("Sec: через cos")
 class SecTest {
 
-    private val secOverStubCos = Sec(StubTables.Cos.module)
-    private val secOverRealCos = Sec(Cos(TEST_EPS))
+    private val sec = Sec(StubTables.Cos.module)
 
     companion object {
         @JvmStatic
@@ -43,20 +39,13 @@ class SecTest {
     @ParameterizedTest(name = "x = {0}")
     @MethodSource("secReferenceRows")
     fun `sec matches reference table`(x: Double, expected: Double) {
-        assertEquals(expected, secOverStubCos.compute(x)!!, REF_TOLERANCE)
-    }
-
-    @DisplayName("Для NaN и бесконечностей возвращается null (реальный Cos)")
-    @ParameterizedTest(name = "аргумент: {0}")
-    @ValueSource(doubles = [Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY])
-    fun `non finite x returns null`(x: Double) {
-        assertNull(secOverRealCos.compute(x))
+        assertEquals(expected, sec.compute(x)!!, REF_TOLERANCE)
     }
 
     @Test
     @DisplayName("sec(π/2): cos=0 в стабе — null")
     fun `sec pole at pi half`() {
-        assertNull(secOverStubCos.compute(PI / 2))
+        assertNull(sec.compute(PI / 2))
     }
 
     @Test

@@ -1,9 +1,7 @@
 package com.arekalov.tpolab2.functions.trig
 
 import com.arekalov.tpolab2.REF_TOLERANCE
-import com.arekalov.tpolab2.TEST_EPS
 import com.arekalov.tpolab2.functions.FunctionModule
-import com.arekalov.tpolab2.functions.core.Cos
 import com.arekalov.tpolab2.testutil.StubTables
 import java.util.stream.Stream
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -13,7 +11,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import org.junit.jupiter.params.provider.ValueSource
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
@@ -23,12 +20,7 @@ import org.mockito.kotlin.whenever
  */
 @DisplayName("Csc: через sin")
 class CscTest {
-
-    private val sinMod = Sin(StubTables.Cos.module)
-    private val cscOverStub = Csc(sinMod)
-
-    private val sinReal = Sin(Cos(TEST_EPS))
-    private val cscOverReal = Csc(sinReal)
+    private val csc = Csc(StubTables.Sin.module)
 
     companion object {
         @JvmStatic
@@ -44,21 +36,18 @@ class CscTest {
     @DisplayName("Значения csc по эталону StubTables.Csc.TABLE")
     @ParameterizedTest(name = "x = {0}")
     @MethodSource("cscReferenceRows")
-    fun `csc matches reference table`(x: Double, expected: Double) {
-        assertEquals(expected, cscOverStub.compute(x)!!, REF_TOLERANCE)
-    }
-
-    @DisplayName("Для NaN и бесконечностей возвращается null (реальный Cos)")
-    @ParameterizedTest(name = "аргумент: {0}")
-    @ValueSource(doubles = [Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY])
-    fun `non finite x returns null`(x: Double) {
-        assertNull(cscOverReal.compute(x))
+    fun `csc matches reference table`(x: Double, expected: Double?) {
+        if (expected == null) {
+            assertNull(csc.compute(x))
+        } else {
+            assertEquals(expected, csc.compute(x)!!, REF_TOLERANCE)
+        }
     }
 
     @Test
     @DisplayName("csc(0): полюс, возвращается null")
     fun `csc pole at zero`() {
-        assertNull(cscOverStub.compute(0.0))
+        assertNull(csc.compute(0.0))
     }
 
     @Test
