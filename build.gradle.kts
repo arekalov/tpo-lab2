@@ -1,7 +1,12 @@
 plugins {
     kotlin("jvm") version "2.0.21"
+    application
     id("org.jetbrains.kotlinx.kover") version "0.8.3"
     id("io.gitlab.arturbosch.detekt") version "1.23.8"
+}
+
+application {
+    mainClass.set("com.arekalov.tpolab2.MainKt")
 }
 
 group = "com.arekalov.tpolab2"
@@ -57,10 +62,6 @@ tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
     }
 
     jvmTarget = "17"
-}
-
-tasks.named("check") {
-    setDependsOn(dependsOn.filterNot { it.toString().contains("detekt") })
 }
 
 tasks.register("reports") {

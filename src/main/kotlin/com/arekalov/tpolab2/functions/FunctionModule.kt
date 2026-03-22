@@ -1,4 +1,4 @@
-package com.arekalov.tpolab2.core
+package com.arekalov.tpolab2.functions
 
 /**
  * Вычисление значения функции в точке [x].

@@ -1,0 +1,16 @@
+package com.arekalov.tpolab2.functions.trig
+
+import com.arekalov.tpolab2.functions.FunctionModule
+
+/** csc(x) = 1 / sin(x). */
+class Csc(
+    private val sin: FunctionModule,
+) : FunctionModule {
+    override fun compute(x: Double): Double? {
+        val s = sin.compute(x) ?: return null
+        if (s == 0.0) {
+            return null
+        }
+        return 1.0 / s
+    }
+}

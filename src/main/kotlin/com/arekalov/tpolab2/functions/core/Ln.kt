@@ -1,5 +1,6 @@
-package com.arekalov.tpolab2.core
+package com.arekalov.tpolab2.functions.core
 
+import com.arekalov.tpolab2.functions.FunctionModule
 import kotlin.math.absoluteValue
 
 /**

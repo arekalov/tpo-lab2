@@ -1,6 +1,6 @@
-package com.arekalov.tpolab2.core
+package com.arekalov.tpolab2.functions.core
 
-import kotlin.math.PI
+import com.arekalov.tpolab2.functions.FunctionModule
 import kotlin.math.absoluteValue
 
 /**
@@ -34,17 +34,5 @@ class Cos(
             term *= -t * t / ((2 * n - 1) * (2 * n))
         }
         return sum
-    }
-
-    private fun reduceToMinusPiPi(x: Double): Double {
-        val twoPi = 2.0 * PI
-        var y = x % twoPi
-        if (y > PI) {
-            y -= twoPi
-        }
-        if (y < -PI) {
-            y += twoPi
-        }
-        return y
     }
 }
