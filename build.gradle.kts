@@ -66,13 +66,19 @@ tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
 
 tasks.register("reports") {
     group = "reporting"
-    description = "Открывает отчёты в браузере"
+    description = "Открывает отчёты в браузере (тесты — только если есть src/test и отчёт сгенерирован)"
 
     dependsOn(tasks.test, tasks.named("koverHtmlReport"))
 
     doLast {
-        exec { commandLine("open", "build/reports/tests/test/index.html") }
-        exec { commandLine("open", "build/reports/kover/html/index.html") }
+        val testIndex = layout.buildDirectory.file("reports/tests/test/index.html").get().asFile
+        if (testIndex.isFile) {
+            exec { commandLine("open", testIndex.absolutePath) }
+        }
+        val koverIndex = layout.buildDirectory.file("reports/kover/html/index.html").get().asFile
+        if (koverIndex.isFile) {
+            exec { commandLine("open", koverIndex.absolutePath) }
+        }
     }
 }
 
