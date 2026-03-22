@@ -6,7 +6,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
-internal fun moduleFromNullableTable(moduleId: String, table: Map<Double, Double?>): FunctionModule {
+internal fun moduleFromTable(moduleId: String, table: Map<Double, Double?>): FunctionModule {
     val m = mock<FunctionModule>()
     whenever(m.moduleId).thenReturn(moduleId)
     whenever(m.compute(any())).thenAnswer { inv ->
@@ -19,10 +19,6 @@ internal fun moduleFromNullableTable(moduleId: String, table: Map<Double, Double
     return m
 }
 
-internal fun moduleFromFiniteTable(moduleId: String, table: Map<Double, Double?>): FunctionModule {
-    val nullable: Map<Double, Double?> = table.entries.associate { (k, v) -> k to v }
-    return moduleFromNullableTable(moduleId, nullable)
-}
 
 /**
  * Все табличные данные и Mockito-стабы для тестов (узлы — только [mapOf] / [listOf]).
@@ -63,7 +59,7 @@ object StubTables {
             -1000.0 to 0.5623790762907029,
         )
 
-        val module: FunctionModule = moduleFromFiniteTable("cos", TABLE)
+        val module: FunctionModule = moduleFromTable("cos", TABLE)
     }
 
     /**
@@ -97,7 +93,7 @@ object StubTables {
             1.0 to 1.8508157176809255,
             -1000.0 to 1.7781600385912715,
         )
-        val module: FunctionModule = moduleFromFiniteTable("sec", TABLE)
+        val module: FunctionModule = moduleFromTable("sec", TABLE)
     }
 
     /**
@@ -132,7 +128,7 @@ object StubTables {
             0.0 to 0.0,
             -1000.0 to -0.8268795405320025,
         )
-        val module: FunctionModule = moduleFromFiniteTable("sin", TABLE)
+        val module: FunctionModule = moduleFromTable("sin", TABLE)
     }
 
     /**
@@ -165,7 +161,7 @@ object StubTables {
             1.0 to 1.1883951057781212,
             -1000.0 to -1.20936599707935,
         )
-        val module: FunctionModule = moduleFromFiniteTable("csc", TABLE)
+        val module: FunctionModule = moduleFromTable("csc", TABLE)
     }
 
     /**
@@ -199,7 +195,7 @@ object StubTables {
             1.0 to 1.5574077246549023,
             -1000.0 to -1.4703241557027185,
         )
-        val module: FunctionModule = moduleFromFiniteTable("tan", TABLE)
+        val module: FunctionModule = moduleFromTable("tan", TABLE)
     }
 
     object Ln {
@@ -230,7 +226,7 @@ object StubTables {
             4.93341 to 1.5960304325217474,
         )
 
-        val module: FunctionModule = moduleFromNullableTable("ln", TABLE)
+        val module: FunctionModule = moduleFromTable("ln", TABLE)
 
         /** ln(x)/ln(base) по моку — для [com.arekalov.tpolab2.functions.log.LogBaseTest]. */
         fun logBaseExpected(base: Double, x: Double): Double? {
@@ -257,7 +253,7 @@ object StubTables {
             1.0E-7 to -23.25349666421154,
             4.93341 to 2.3025851901069925,
         )
-        val module: FunctionModule = moduleFromFiniteTable("log2", TABLE)
+        val module: FunctionModule = moduleFromTable("log2", TABLE)
     }
 
 
@@ -277,7 +273,7 @@ object StubTables {
             1.0E-7 to -14.671322920025695,
             4.93341 to 1.4527695065714923,
         )
-        val module: FunctionModule = moduleFromFiniteTable("log3", TABLE)
+        val module: FunctionModule = moduleFromTable("log3", TABLE)
     }
 
     object Log10 {
@@ -296,7 +292,7 @@ object StubTables {
             1.0E-7 to -7.0,
             4.93341 to 0.6931472097938551,
         )
-        val module: FunctionModule = moduleFromFiniteTable("log10", TABLE)
+        val module: FunctionModule = moduleFromTable("log10", TABLE)
     }
 
     object LogBranch {
@@ -309,7 +305,7 @@ object StubTables {
             100.0 to 8.68254219356,
             1_000_000.0 to 105.773900858,
         )
-        val module: FunctionModule = moduleFromFiniteTable("trigBranch", TABLE)
+        val module: FunctionModule = moduleFromTable("trigBranch", TABLE)
     }
 
     object TrigBranch {
@@ -323,38 +319,18 @@ object StubTables {
             -PI / 6 to 2.59807621135,
             -1_000.0 to 1.24250120863,
         )
-        val module: FunctionModule = moduleFromFiniteTable("trigBranch", TABLE)
+        val module: FunctionModule = moduleFromTable("trigBranch", TABLE)
     }
 
-    /**
-     * Сетка и ожидания кусочной системы на стабах
-     * ([com.arekalov.tpolab2.integration.MockedBranchesSystemTest]).
-     */
-    object PiecewiseSystem {
-        val TRIG_X: List<Double> = listOf(
-            -1.5, // x=-1.5: MockedBranchesSystemTest; |x|>1, не −0.5 и не −1 (полюса/другие тесты)
-            -0.7, // x=-0.7: MockedBranchesSystemTest; между −1 и −0.5, без tan=0
-            -0.4, // x=-0.4: MockedBranchesSystemTest; близко к 0⁻, иной масштаб
-        )
-
-        val LOG_X: List<Double> = listOf(
-            1.5, // x=1.5: MockedBranchesSystemTest; первая точка лог-ветки, узлы Ln/Log*
-            4.0, // x=4.0: MockedBranchesSystemTest; вторая точка сетки
-            6.0, // x=6.0: MockedBranchesSystemTest; третья точка сетки
-        )
-
-        val TRIG_EXPECTED: Map<Double, Double> = mapOf(
-            -1.5 to 0.14165204597035536, // x=-1.5: ожидание SystemFunction при подстановке стабов триг-ветки
-            -0.7 to 1.9520840194111682, // x=-0.7: то же
-            -0.4 to 3.2862834140419954, // x=-0.4: то же (дрейф double после уточнения sin/csc в стабах)
-        )
-
-        val LOG_EXPECTED: Map<Double, Double> = mapOf(
-            1.5 to -0.3024583248558162, // x=1.5: ожидание SystemFunction на лог-стабах
-            4.0 to -0.182174378463966, // x=4.0: то же
-            6.0 to 0.21973233290294256, // x=6.0: то же
-        )
+    object System {
+        val TABLE: Map<Double, Double?>
+            get() {
+                val map = TrigBranch.TABLE.toMutableMap()
+                map.putAll(LogBranch.TABLE)
+                return map
+            }
     }
+
 
     /** Мок всегда null — обрыв цепочки в TrigSystemBranch / LogSystemBranch. */
     object AlwaysNull {

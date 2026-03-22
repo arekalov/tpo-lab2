@@ -1,45 +1,49 @@
 package com.arekalov.tpolab2.system
 
+import com.arekalov.tpolab2.REF_TOLERANCE
 import com.arekalov.tpolab2.functions.FunctionModule
+import com.arekalov.tpolab2.testutil.StubTables
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import java.util.stream.Stream
 
 @DisplayName("SystemFunction: кусочное ветвление и NaN")
 class SystemFunctionTest {
 
-    @Test
-    @DisplayName("x ≤ 0: вызывается тригонометрическая ветка")
-    fun `routes to trig for non positive x`() {
-        val trig = mock<FunctionModule>()
-        val log = mock<FunctionModule>()
-        whenever(trig.moduleId).thenReturn("trig")
-        whenever(log.moduleId).thenReturn("log")
-        whenever(trig.compute(any())).thenAnswer { inv ->
-            if (inv.getArgument<Double>(0) <= 0.0) 11.0 else null
-        }
-        whenever(log.compute(any())).thenReturn(22.0)
-        val sys = SystemFunction(trig, log)
-        assertEquals(11.0, sys.compute(0.0))
-        assertEquals(11.0, sys.compute(-2.0))
+    val system = SystemFunction(
+        trigBranch = StubTables.TrigBranch.module,
+        logBranch = StubTables.LogBranch.module
+    )
+
+    companion object {
+        @JvmStatic
+        fun systemTableRows(): Stream<Arguments> =
+            Stream.of(
+                *StubTables.System.TABLE.entries
+                    .sortedBy { it.key }
+                    .map { (x, expected) -> Arguments.of(x, expected) }
+                    .toTypedArray(),
+            )
     }
 
-    @Test
-    fun `routes to log for positive x`() {
-        val trig = mock<FunctionModule>()
-        val log = mock<FunctionModule>()
-        whenever(trig.moduleId).thenReturn("trig")
-        whenever(log.moduleId).thenReturn("log")
-        whenever(trig.compute(any())).thenReturn(11.0)
-        whenever(log.compute(any())).thenReturn(22.0)
-        val sys = SystemFunction(trig, log)
-        assertEquals(22.0, sys.compute(0.5))
+    @DisplayName("Параметризованные тесты на system")
+    @ParameterizedTest(name = "x = {0}, expected = {1}")
+    @MethodSource("systemTableRows")
+    fun `hand stub values at x0`(x: Double, expected: Double?) {
+        if (expected == null) {
+            assertNull(system.compute(x))
+        } else {
+            assertEquals(expected, system.compute(x)!!, REF_TOLERANCE)
+        }
     }
 
     @DisplayName("Неконечный x (NaN, ±∞): система возвращает null")
