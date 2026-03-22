@@ -16,19 +16,19 @@ comments:
   AbsentOrWrongFileLicense:
     active: false
   CommentOverPrivateFunction:
-    active: false
+    active: true
   CommentOverPrivateProperty:
-    active: false
+    active: true
   DeprecatedBlockTag:
-    active: false
+    active: true
   EndOfSentenceFormat:
-    active: false
+    active: true
   OutdatedDocumentation:
-    active: false
+    active: true
   UndocumentedPublicClass:
-    active: false
+    active: true
   UndocumentedPublicFunction:
-    active: false
+    active: true
 
 complexity:
   active: true
