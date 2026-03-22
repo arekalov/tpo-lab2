@@ -22,7 +22,12 @@ class LogBaseTest {
 
     private fun assertLogBase(base: Double, x: Double) {
         val logB = LogBase(lnModule, base, "log${base.toInt()}")
-        assertEquals(StubTables.Ln.logBaseExpected(base, x), logB.compute(x)!!, 1e-5)
+        val value = StubTables.Ln.logBaseExpected(base, x)
+        if (value == null) {
+            assertNull(logB.compute(x))
+        } else {
+            assertEquals(value, logB.compute(x)!!, 1e-5)
+        }
     }
 
     companion object {

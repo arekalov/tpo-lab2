@@ -1,48 +1,55 @@
 package com.arekalov.tpolab2.system
 
+import com.arekalov.tpolab2.REF_TOLERANCE
 import com.arekalov.tpolab2.functions.FunctionModule
 import com.arekalov.tpolab2.testutil.StubTables
+import com.arekalov.tpolab2.testutil.StubTables.Log10
+import com.arekalov.tpolab2.testutil.StubTables.Log2
+import com.arekalov.tpolab2.testutil.StubTables.Log3
+import java.util.stream.Stream
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
+import kotlin.jvm.JvmStatic
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
 @DisplayName("LogSystemBranch: формула ветки, знаменатель log3")
 class LogSystemBranchTest {
+    val l2 = Log2.module
+    val l10 = Log10.module
+    val l3 = Log3.module
+    val ln = StubTables.Ln.module
 
-    @Test
-    @DisplayName("Формула ветки на ручных значениях табличных заглушек в одной точке")
-    fun `hand stub values at x0`() {
-        val x = 2.0
-        val branch = LogSystemBranch(
-            StubTables.Log2.module,
-            StubTables.Log10.module,
-            StubTables.Log3.module,
-            StubTables.Ln.module,
-        )
-        val l2 = StubTables.Log2.TABLE.getValue(x)
-        val l10 = StubTables.Log10.TABLE.getValue(x)
-        val l3 = StubTables.Log3.TABLE.getValue(x)
-        val ln = StubTables.Ln.TABLE.getValue(x)!!
-        val inner = (l2 - l2) + l2 * l10
-        val expected = (inner * l3 - l3 * ln) / l3
-        assertEquals(expected, branch.compute(x)!!, 1e-12)
+    val logBranch = LogSystemBranch(l2, l10, l3, ln)
+
+    companion object {
+        /** Строки [StubTables.LogBranch.TABLE]: `expected == null` — ждём `null` от ветки (JUnit не подставляет null в `double`). */
+        @JvmStatic
+        fun logBranchTableRows(): Stream<Arguments> =
+            Stream.of(
+                *StubTables.LogBranch.TABLE.entries
+                    .sortedBy { it.key }
+                    .map { (x, expected) -> Arguments.of(x, expected) }
+                    .toTypedArray(),
+            )
     }
 
-    @Test
-    @DisplayName("Если log3(x) = 0 (знаменатель), результат не определён — null")
-    fun `undefined when log3 denominator zero`() {
-        val x = 3.0
-        val branch = LogSystemBranch(
-            StubTables.Log2.module,
-            StubTables.Log10.module,
-            StubTables.Log3.module,
-            StubTables.Ln.module,
-        )
-        assertNull(branch.compute(x))
+    @DisplayName("Ветка vs [StubTables.LogBranch.TABLE] (null — не определено)")
+    @ParameterizedTest(name = "x = {0}, expected = {1}")
+    @MethodSource("logBranchTableRows")
+    fun `branch formula matches tables on grid`(x: Double, expected: Double?) {
+        val actual = logBranch.compute(x)
+        if (expected == null) {
+            assertNull(actual)
+        } else {
+            assertEquals(expected, actual!!, REF_TOLERANCE)
+        }
     }
 
     @Test

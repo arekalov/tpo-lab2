@@ -1,5 +1,6 @@
 package com.arekalov.tpolab2.functions.core
 
+import com.arekalov.tpolab2.REF_TOLERANCE
 import kotlin.math.PI
 import kotlin.math.cos
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -16,7 +17,7 @@ class TrigAngleReductionTest {
         for (x in xs) {
             val y = reduceToMinusPiPi(x)
             assertTrue(y >= -PI && y <= PI, "x=$x -> y=$y out of [-π,π]")
-            assertEquals(cos(x), cos(y), 1e-12, "cos periodicity x=$x")
+            assertEquals(cos(x), cos(y), REF_TOLERANCE, "cos periodicity x=$x")
         }
     }
 
@@ -27,6 +28,6 @@ class TrigAngleReductionTest {
         assertTrue((x0 % twoPi) < -PI, "на JVM -5 % 2π даёт остаток < −π, срабатывает y += 2π")
         val y = reduceToMinusPiPi(x0)
         assertTrue(y >= -PI && y <= PI)
-        assertEquals(cos(x0), cos(y), 1e-12)
+        assertEquals(cos(x0), cos(y), REF_TOLERANCE)
     }
 }

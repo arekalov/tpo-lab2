@@ -19,8 +19,8 @@ internal fun moduleFromNullableTable(moduleId: String, table: Map<Double, Double
     return m
 }
 
-internal fun moduleFromFiniteTable(moduleId: String, table: Map<Double, Double>): FunctionModule {
-    val nullable: Map<Double, Double?> = table.entries.associate { (k, v) -> k to v as Double? }
+internal fun moduleFromFiniteTable(moduleId: String, table: Map<Double, Double?>): FunctionModule {
+    val nullable: Map<Double, Double?> = table.entries.associate { (k, v) -> k to v }
     return moduleFromNullableTable(moduleId, nullable)
 }
 
@@ -56,36 +56,6 @@ object StubTables {
         )
 
         val module: FunctionModule = moduleFromFiniteTable("cos", TABLE)
-    }
-
-    object Ln {
-        val TABLE: Map<Double, Double?> = mapOf(
-            0.0 to null, // граничный случай: x≤0 вне ОДЗ ln; мок null для веток
-            1.0 to 0.0, // ln(1)=0; LnTest, LogBaseTest log₂1
-            1.5 to 0.4054651081081644, // PiecewiseSystem.LOG_X[0], LnTest, LogSystemBranch, MockedBranchesSystemTest
-            2.0 to 0.6931471805599453, // основание LogBase log₂; ln(2)
-            3.0 to 1.0986122886681098, // основание log₃; ln(3)
-            4.0 to 1.3862943611198906, // PiecewiseSystem.LOG_X[1], LogSystemBranch, MockedBranchesSystemTest
-            5.5 to 1.7047480922384423, // LogBaseTest log₃5.5; ln(5.5)
-            6.0 to 1.791759469228055, // PiecewiseSystem.LOG_X[2], MockedBranchesSystemTest
-            8.0 to 2.0794415416798357, // ln(8); LogBaseTest log₂8
-            9.0 to 2.1972245773362196, // ln(9); LogBaseTest log₃9
-            10.0 to 2.302585092994046, // основание log₁₀; ln(10)
-            27.0 to 3.295836866004329, // ln(27); LogBaseTest log₃27
-            100.0 to 4.605170185988092, // ln(100); LnTest, LogBaseTest log₁₀100
-            1000.0 to 6.907755278982137, // ln(1000); LogBaseTest log₁₀1000
-            2.5 to 0.9162907318741551, // LogSystemBranchTest; между узлами PiecewiseSystem
-            2.6 to 0.9555114450274363, // LogSystemBranchTest при подмене модуля на AlwaysNull
-            0.25 to -1.3862943611198906, // LnTest; интервал (0,1)
-            2.718281828459045 to 1.0, // x=e; LnTest
-            64.0 to 4.1588830833596715, // LnTest; масштабирование через ln2
-            0.001 to -6.907755278982137, // LnTest; близко к 0⁺
-        )
-
-        val module: FunctionModule = moduleFromNullableTable("ln", TABLE)
-
-        /** ln(x)/ln(base) по моку — для [com.arekalov.tpolab2.functions.log.LogBaseTest]. */
-        fun logBaseExpected(base: Double, x: Double): Double = TABLE.getValue(x)!! / TABLE.getValue(base)!!
     }
 
     /**
@@ -191,8 +161,49 @@ object StubTables {
         val module: FunctionModule = moduleFromFiniteTable("tan", TABLE)
     }
 
+    object Ln {
+        val TABLE: Map<Double, Double?> = mapOf(
+            0.0 to null, // граничный случай: x≤0 вне ОДЗ ln; мок null для веток
+            1.0 to 0.0, // ln(1)=0; LnTest, LogBaseTest log₂1
+            1.5 to 0.4054651081081644, // PiecewiseSystem.LOG_X[0], LnTest, LogSystemBranch, MockedBranchesSystemTest
+            2.0 to 0.6931471805599453, // основание LogBase log₂; ln(2)
+            3.0 to 1.0986122886681098, // основание log₃; ln(3)
+            4.0 to 1.3862943611198906, // PiecewiseSystem.LOG_X[1], LogSystemBranch, MockedBranchesSystemTest
+            5.5 to 1.7047480922384423, // LogBaseTest log₃5.5; ln(5.5)
+            6.0 to 1.791759469228055, // PiecewiseSystem.LOG_X[2], MockedBranchesSystemTest
+            8.0 to 2.0794415416798357, // ln(8); LogBaseTest log₂8
+            9.0 to 2.1972245773362196, // ln(9); LogBaseTest log₃9
+            10.0 to 2.302585092994046, // основание log₁₀; ln(10)
+            27.0 to 3.295836866004329, // ln(27); LogBaseTest log₃27
+            100.0 to 4.605170185988092, // ln(100); LnTest, LogBaseTest log₁₀100
+            1000.0 to 6.907755278982137, // ln(1000); LogBaseTest log₁₀1000
+            2.5 to 0.9162907318741551, // LogSystemBranchTest; между узлами PiecewiseSystem
+            2.6 to 0.9555114450274363, // LogSystemBranchTest при подмене модуля на AlwaysNull
+            0.25 to -1.3862943611198906, // LnTest; интервал (0,1)
+            2.718281828459045 to 1.0, // x=e; LnTest
+            64.0 to 4.1588830833596715, // LnTest; масштабирование через ln2
+            0.001 to -6.907755278982137, // LnTest; близко к 0⁺
+            1000000.0 to 13.81551055, // LogSystemBranchTest,
+            100.0 to 4.605170185988092,
+            1.0E-7 to -16.11809565095832,
+            4.93341 to 1.5960304325217474,
+        )
+
+        val module: FunctionModule = moduleFromNullableTable("ln", TABLE)
+
+        /** ln(x)/ln(base) по моку — для [com.arekalov.tpolab2.functions.log.LogBaseTest]. */
+        fun logBaseExpected(base: Double, x: Double): Double? {
+            val a = TABLE.getValue(x)?: return null
+            val b = TABLE.getValue(base)?: return null
+            return a/ b
+        }
+    }
+
+
     object Log2 {
-        val TABLE: Map<Double, Double> = mapOf(
+        val TABLE: Map<Double, Double?> = mapOf(
+            0.0 to null, // x=0: LogBranch.TABLE; до ln стаб отрабатывает, ln → null
+            1.0 to 0.0, // x=1: LogBranch.TABLE; согласовано с log10/log3=0 на 1
             1.5 to 0.5849625007211562, // x=1.5: PiecewiseSystem.LOG_X[0], MockedBranchesSystemTest
             2.0 to 1.0, // x=2.0: LogBaseTest, LogSystemBranch; мок log₂(2)=1 при ln-стабе
             2.5 to 1.32, // x=2.5: LogSystemBranchTest; между узлами PiecewiseSystem
@@ -200,25 +211,19 @@ object StubTables {
             3.0 to 1.0, // x=3.0: сценарий log3=0 в стабе; LogSystemBranch
             4.0 to 2.0, // x=4.0: PiecewiseSystem.LOG_X[1], MockedBranchesSystemTest
             6.0 to 2.584962500721156, // x=6.0: PiecewiseSystem.LOG_X[2], MockedBranchesSystemTest
+            1000000.0 to 19.93156856,
+            100.0 to 6.643856189774725,
+            1.0E-7 to -23.25349666421154,
+            4.93341 to 2.3025851901069925,
         )
         val module: FunctionModule = moduleFromFiniteTable("log2", TABLE)
     }
 
-    object Log10 {
-        val TABLE: Map<Double, Double> = mapOf(
-            1.5 to 0.17609125905568124, // x=1.5: общая лог-сетка, MockedBranchesSystemTest
-            2.0 to 2.0, // x=2.0: LogSystemBranch; стаб согласован с формулой ветки
-            2.5 to 0.40, // x=2.5: LogSystemBranchTest
-            2.6 to 1.0, // x=2.6: LogSystemBranchTest подмена соседнего модуля
-            3.0 to 1.0, // x=3.0: узел log3=0; проверка null лог-ветки
-            4.0 to 0.6020599913279623, // x=4.0: PiecewiseSystem.LOG_X[1]
-            6.0 to 0.7781512503836435, // x=6.0: PiecewiseSystem.LOG_X[2]
-        )
-        val module: FunctionModule = moduleFromFiniteTable("log10", TABLE)
-    }
 
     object Log3 {
-        val TABLE: Map<Double, Double> = mapOf(
+        val TABLE: Map<Double, Double?> = mapOf(
+            0.0 to null, // x=0: LogBranch.TABLE; ненулевой знаменатель до обрыва на ln
+            1.0 to 1.0, // x=1: LogBranch.TABLE; ветка 0 при ln(1)=0 и log2/log10=0
             1.5 to 0.3690702464285425, // x=1.5: формула лог-ветки, MockedBranchesSystemTest
             2.0 to 0.5, // x=2.0: LogSystemBranch; общая сетка с Log2/Log10
             2.5 to 0.83, // x=2.5: LogSystemBranchTest
@@ -226,8 +231,44 @@ object StubTables {
             3.0 to 0.0, // граничный случай: log3=0 → знаменатель null в LogSystemBranchTest
             4.0 to 1.2618595071429148, // x=4.0: PiecewiseSystem.LOG_X[1]
             6.0 to 1.6309297535714573, // x=6.0: PiecewiseSystem.LOG_X[2]
+            1000000.0 to 12.57541964,
+            100.0 to 4.19180654857877,
+            1.0E-7 to -14.671322920025695,
+            4.93341 to 1.4527695065714923,
         )
         val module: FunctionModule = moduleFromFiniteTable("log3", TABLE)
+    }
+
+    object Log10 {
+        val TABLE: Map<Double, Double?> = mapOf(
+            0.0 to null, // x=0: LogBranch.TABLE
+            1.0 to 0.0, // x=1: LogBranch.TABLE
+            1.5 to 0.17609125905568124, // x=1.5: общая лог-сетка, MockedBranchesSystemTest
+            2.0 to 2.0, // x=2.0: LogSystemBranch; стаб согласован с формулой ветки
+            2.5 to 0.40, // x=2.5: LogSystemBranchTest
+            2.6 to 1.0, // x=2.6: LogSystemBranchTest подмена соседнего модуля
+            3.0 to 1.0, // x=3.0: узел log3=0; проверка null лог-ветки
+            4.0 to 0.6020599913279623, // x=4.0: PiecewiseSystem.LOG_X[1]
+            6.0 to 0.7781512503836435, // x=6.0: PiecewiseSystem.LOG_X[2]
+            1000000.0 to 6.0,
+            100.0 to 2.0,
+            1.0E-7 to -7.0,
+            4.93341 to 0.6931472097938551,
+        )
+        val module: FunctionModule = moduleFromFiniteTable("log10", TABLE)
+    }
+
+    object LogBranch {
+        val TABLE: Map<Double, Double?> = mapOf(
+            0.000_000_1 to 178.8925723,
+            0.0 to null, // ln(0)=null в стабе
+            1.0 to 0.0, // log2/log10=0, ln(1)=0, log3(1)=1 → ветка 0
+            3.0 to null, // log3(3)=0 в стабе → знаменатель 0, ветка null
+            4.93341 to 0.0,
+            100.0 to 8.68254219356,
+            1_000_000.0 to 105.773900858,
+        )
+        val module: FunctionModule = moduleFromFiniteTable("trigBranch", TABLE)
     }
 
     /**

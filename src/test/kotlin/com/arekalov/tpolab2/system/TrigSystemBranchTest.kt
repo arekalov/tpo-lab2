@@ -1,5 +1,6 @@
 package com.arekalov.tpolab2.system
 
+import com.arekalov.tpolab2.REF_TOLERANCE
 import com.arekalov.tpolab2.functions.FunctionModule
 import com.arekalov.tpolab2.testutil.StubTables
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -13,6 +14,8 @@ import org.mockito.kotlin.whenever
 
 @DisplayName("TrigSystemBranch: формула ветки, особые точки")
 class TrigSystemBranchTest {
+
+
 
     @Test
     @DisplayName("Формула ветки на ручных значениях табличных заглушек в одной точке")
@@ -32,7 +35,7 @@ class TrigSystemBranchTest {
         val tan = StubTables.Tan.TABLE.getValue(x)
         val inner = (sec - sec) + sec * sin
         val expected = (inner * cos - sin * csc) / tan
-        assertEquals(expected, branch.compute(x)!!, 1e-12)
+        assertEquals(expected, branch.compute(x)!!, REF_TOLERANCE)
     }
 
     @Test
