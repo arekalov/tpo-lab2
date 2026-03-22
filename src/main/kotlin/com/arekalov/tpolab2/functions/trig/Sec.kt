@@ -7,6 +7,8 @@ class Sec(
     private val cos: FunctionModule,
 ) : FunctionModule {
 
+    override val moduleId = "sec"
+
     override fun compute(x: Double): Double? {
         val c = cos.compute(x) ?: return null
         if (c == 0.0) {

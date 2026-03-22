@@ -13,6 +13,8 @@ class TrigSystemBranch(
     private val tan: FunctionModule,
 ) : FunctionModule {
 
+    override val moduleId = "trigBranch"
+
     override fun compute(x: Double): Double? {
         val sec1 = sec.compute(x) ?: return null
         val sec2 = sec.compute(x) ?: return null

@@ -1,8 +1,8 @@
 plugins {
-    kotlin("jvm") version "2.0.21"
+    kotlin("jvm")
     application
-    id("org.jetbrains.kotlinx.kover") version "0.8.3"
-    id("io.gitlab.arturbosch.detekt") version "1.23.8"
+    id("org.jetbrains.kotlinx.kover")
+    id("io.gitlab.arturbosch.detekt")
 }
 
 application {
@@ -17,11 +17,14 @@ repositories {
 }
 
 dependencies {
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.8")
+
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.0")
-
-    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.8")
+    testImplementation("org.mockito:mockito-core:5.14.2")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
+    testImplementation("org.mockito:mockito-junit-jupiter:5.14.2")
 }
 
 kover {
@@ -31,6 +34,7 @@ kover {
                 classes(
                     "*\$\$inlined\$*",
                     "*\$lambda\$*",
+                    "com.arekalov.tpolab2.MainKt",
                 )
                 annotatedBy(
                     "*Generated*",
@@ -43,10 +47,11 @@ kover {
 detekt {
     buildUponDefaultConfig = true
     allRules = false
-    config.setFrom("$projectDir/detekt.yml")
+    config.setFrom(layout.projectDirectory.file("detekt.yml"))
 }
 
 tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+    setSource(files("src/main/kotlin"))
     reports {
         html {
             required.set(true)
@@ -60,13 +65,12 @@ tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
         sarif.required.set(false)
         md.required.set(false)
     }
-
     jvmTarget = "17"
 }
 
 tasks.register("reports") {
     group = "reporting"
-    description = "Открывает отчёты в браузере (тесты — только если есть src/test и отчёт сгенерирован)"
+    description = "Открывает отчёты в браузере (JUnit и Kover)"
 
     dependsOn(tasks.test, tasks.named("koverHtmlReport"))
 
@@ -82,10 +86,14 @@ tasks.register("reports") {
     }
 }
 
+tasks.check {
+    dependsOn(tasks.detekt)
+}
 
 tasks.test {
     useJUnitPlatform()
 }
+
 kotlin {
     jvmToolchain(17)
 }

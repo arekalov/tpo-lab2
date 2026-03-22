@@ -6,6 +6,9 @@ import com.arekalov.tpolab2.functions.FunctionModule
 class Csc(
     private val sin: FunctionModule,
 ) : FunctionModule {
+
+    override val moduleId = "csc"
+
     override fun compute(x: Double): Double? {
         val s = sin.compute(x) ?: return null
         if (s == 0.0) {

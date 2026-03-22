@@ -12,6 +12,8 @@ class LogSystemBranch(
     private val ln: FunctionModule,
 ) : FunctionModule {
 
+    override val moduleId = "logBranch"
+
     override fun compute(x: Double): Double? {
         val l2a = log2.compute(x) ?: return null
         val l2b = log2.compute(x) ?: return null

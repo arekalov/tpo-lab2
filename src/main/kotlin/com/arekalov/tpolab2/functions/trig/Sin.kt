@@ -12,6 +12,8 @@ class Sin(
     private val cos: FunctionModule,
 ) : FunctionModule {
 
+    override val moduleId = "sin"
+
     override fun compute(x: Double): Double? {
         if (x.isNaN() || x.isInfinite()) {
             return null

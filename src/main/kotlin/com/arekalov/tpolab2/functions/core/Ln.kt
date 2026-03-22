@@ -11,6 +11,8 @@ class Ln(
     private val epsilon: Double,
 ) : FunctionModule {
 
+    override val moduleId = "ln"
+
     init {
         require(epsilon > 0.0) { "epsilon must be positive" }
     }

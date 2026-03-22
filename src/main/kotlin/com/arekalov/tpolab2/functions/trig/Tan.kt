@@ -8,6 +8,8 @@ class Tan(
     private val cos: FunctionModule,
 ) : FunctionModule {
 
+    override val moduleId = "tan"
+
     override fun compute(x: Double): Double? {
         val s = sin.compute(x) ?: return null
         val c = cos.compute(x) ?: return null

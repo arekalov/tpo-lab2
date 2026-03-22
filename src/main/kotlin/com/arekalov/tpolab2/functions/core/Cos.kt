@@ -12,6 +12,8 @@ class Cos(
     private val maxTerms: Int = 10_000,
 ) : FunctionModule {
 
+    override val moduleId = "cos"
+
     init {
         require(epsilon > 0.0) { "epsilon must be positive" }
         require(maxTerms > 0) { "maxTerms must be positive" }

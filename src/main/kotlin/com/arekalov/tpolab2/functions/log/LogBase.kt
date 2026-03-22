@@ -6,6 +6,7 @@ import com.arekalov.tpolab2.functions.FunctionModule
 class LogBase(
     private val ln: FunctionModule,
     private val base: Double,
+    override val moduleId: String,
 ) : FunctionModule {
 
     private val lnBase: Double

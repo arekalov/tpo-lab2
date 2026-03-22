@@ -8,6 +8,8 @@ class SystemFunction(
     private val logBranch: FunctionModule,
 ) : FunctionModule {
 
+    override val moduleId = "system"
+
     override fun compute(x: Double): Double? {
         if (x.isNaN() || x.isInfinite()) {
             return null
