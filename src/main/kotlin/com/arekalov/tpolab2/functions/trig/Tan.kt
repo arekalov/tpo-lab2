@@ -2,7 +2,11 @@ package com.arekalov.tpolab2.functions.trig
 
 import com.arekalov.tpolab2.functions.FunctionModule
 
-/** tan(x) = sin(x) / cos(x). */
+/**
+ * **tan(x) = sin(x) / cos(x)** — тангенс через уже собранные [sin] и [cos].
+ *
+ * Любой из модулей может вернуть `null` → результат `null`. Дополнительно: **cos = 0** даёт полюс tan → `null`.
+ */
 class Tan(
     private val sin: FunctionModule,
     private val cos: FunctionModule,

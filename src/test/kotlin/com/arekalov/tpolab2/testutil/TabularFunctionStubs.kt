@@ -1,10 +1,6 @@
 package com.arekalov.tpolab2.testutil
 
 import com.arekalov.tpolab2.functions.FunctionModule
-import com.arekalov.tpolab2.functions.trig.Csc
-import com.arekalov.tpolab2.functions.trig.Sec
-import com.arekalov.tpolab2.functions.trig.Sin
-import com.arekalov.tpolab2.functions.trig.Tan
 import java.util.stream.Stream
 import kotlin.math.PI
 import org.junit.jupiter.params.provider.Arguments
@@ -31,273 +27,259 @@ internal fun moduleFromFiniteTable(moduleId: String, table: Map<Double, Double>)
 }
 
 /**
- * Все табличные данные и Mockito-стабы для тестов.
+ * Все табличные данные и Mockito-стабы для тестов (узлы — только [mapOf] / [listOf]).
  *
- * - `*.TABLE` — ответ мока `module` (интеграция, ветки).
- * - [Cos.REFERENCE], [Ln.REFERENCE] — эталон для тестов ряда Cos / Ln (где отличается от мока).
- * - [Cos.Derived] — sin/sec/tan/csc от [Cos.module].
- * - [PiecewiseSystem] — сетка и ожидания для собранной системы на стабах.
+ * - `*.TABLE` — ответ мока; для Cos и Ln (x>0) — эталон ряда в CosTest/LnTest; в [Ln.TABLE] при x≤0 для мока — null.
+ * - Sin/Sec/Tan/Csc: те же узлы, что у [Cos.TABLE], значения согласованы с цепочкой sin/sec/tan/csc от табличного cos (узлы без sec/tan при cos=0 и без csc при sin=0 опущены).
+ * - [PiecewiseSystem] — как раньше.
  */
 object StubTables {
 
-    private data class FinitePoint(
-        val x: Double,
-        /** ответ мока */
-        val mock: Double,
-        /** эталон для теста ряда Cos; null → совпадает с [mock] */
-        val reference: Double? = null,
-    ) {
-        fun ref(): Double = reference ?: mock
-    }
-
     object Cos {
-        private val POINTS: List<FinitePoint> = listOf(
-            FinitePoint(0.0, 1.0), // центр ряда, cos(0)=1
-            FinitePoint(0.3, 0.955336489125606), // промежуточный положительный угол
-            FinitePoint(0.5235987755982988, 0.8660254037844387), // π/6 — типичный угол
-            FinitePoint(-1.1, 0.4535961214255773), // отрицательный аргумент, чётность
-            FinitePoint(1.5607966601082315, 0.009999500037496774), // около π/2, cos близок к 0
-            FinitePoint(-1.5607966601082315, 0.009999500037496774), // симметрия относительно 0
-            FinitePoint(2.356194490192345, -0.7071067811865475), // 3π/4 после приведения
-            FinitePoint(1e-15, 1.0), // очень малый |x|, ветка малых значений
-            FinitePoint(-1.5, 0.0707372016677029), // −1.5: |x|>1 на отрицательной оси; не −1 и не −0.5 (у −0.5 в стабе tan=0 — полюс ветки)
-            FinitePoint(-0.7, 0.7648421872844885), // −0.7: строго между −1 и −0.5 — «середина» без полюса и без около нуля
-            FinitePoint(-0.4, 0.9210609940028851), // −0.4: близко к 0 слева, но не микроскопический шаг — иной масштаб, чем у −1.5 и −0.7
-            FinitePoint(-0.35, 0.9393727128473789), // отрицательный x не из PiecewiseSystem — расширение DerivedTrigTest / интеграции
-            FinitePoint(-1.0, 0.4, 0.5403023058681398), // x из TrigSystemBranchTest; мок подставляет не cos(x), REFERENCE — для CosTest
-            FinitePoint(-0.5, 1.0, 0.8775825618903728), // в Tan.TABLE здесь 0 — полюс триг-ветки; мок cos тоже «левый», REFERENCE — настоящий cos
-            FinitePoint(-0.2, 1.0, 0.9800665778412416), // x для TrigSystemBranchTest (подмена модуля на AlwaysNull); REFERENCE — настоящий cos
-            FinitePoint(PI / 2, 0.0, 0.0), // cos=0: Sec/Tan → null; эталон cos(π/2)=0
-            FinitePoint(2.0 * PI, 0.5, 1.0), // reduce → 0; мок cos≠±1 → ветка sin при y=0 и ненулевом |sin|
-            FinitePoint(-5.0, 0.28366218546322625), // −5 % 2π < −π → ветка y += 2π в reduceToMinusPiPi; mock = эталон
+        val TABLE: Map<Double, Double> = mapOf(
+            0.0 to 1.0, // граничный случай: cos(0)=1; CosTest, SinTest/SecTest/TanTest/CscTest, узел около нуля
+            0.3 to 0.955336489125606, // x=0.3: CosTest, SinTest/SecTest/TanTest/CscTest; промежуточный угол
+            0.5235987755982988 to 0.8660254037844387, // x=π/6: CosTest, SinTest/SecTest/TanTest/CscTest
+            -1.1 to 0.4535961214255773, // x=-1.1: CosTest, SinTest/SecTest/TanTest/CscTest; отрицательный аргумент
+            1.5607966601082315 to 0.009999500037496774, // граничный случай: cos≈0⁺; CosTest, SinTest/SecTest/TanTest/CscTest, Sec/Tan null рядом
+            -1.5607966601082315 to 0.009999500037496774, // x≈−π/2: симметрия; CosTest, SinTest/SecTest/TanTest/CscTest
+            2.356194490192345 to -0.7071067811865475, // x=3π/4: CosTest, SinTest/SecTest/TanTest/CscTest
+            1e-15 to 1.0, // граничный случай: очень малый |x|; CosTest, SinTest/SecTest/TanTest/CscTest
+            -1.5 to 0.0707372016677029, // x=-1.5: MockedBranchesSystemTest, Sec/Sin/Tan/Csc; |x|>1, не −0.5/−1
+            -0.7 to 0.7648421872844885, // x=-0.7: MockedBranchesSystemTest, Sec/Sin/Tan/Csc; между −1 и −0.5
+            -0.4 to 0.9210609940028851, // x=-0.4: MockedBranchesSystemTest, Sec/Sin/Tan/Csc; близко к 0⁻
+            -0.35 to 0.9393727128473789, // x=-0.35: SystemIntegrationTest (ветка со стабом cos), SinTest/SecTest/TanTest/CscTest
+            -1.0 to 0.5403023058681398, // x=-1.0: TrigSystemBranchTest, SystemIntegrationTest; cos(−1)
+            -0.5 to 0.8775825618903728, // x=-0.5: TrigSystemBranchTest; cos(−0.5), в Tan стаб 0 → полюс ветки
+            -0.2 to 0.9800665778412416, // x=-0.2: TrigSystemBranchTest (AlwaysNull), SystemIntegrationTest
+            PI / 2 to 0.0, // граничный случай: cos(π/2)=0; SinTest/SecTest/TanTest/CscTest Sec/Tan → null
+            2.0 * PI to 1.0, // x=2π: CosTest, SinTest/SecTest/TanTest/CscTest; cos(2π), приведение угла
+            -5.0 to 0.28366218546322625, // x=-5: CosTest, TrigAngleReductionTest; остаток по 2π, ветка reduce
         )
-
-        val TABLE: Map<Double, Double> = POINTS.associate { it.x to it.mock }
-
-        /** Эталонные cos(x) для [com.arekalov.tpolab2.functions.core.CosTest]. */
-        val REFERENCE: Map<Double, Double> = POINTS.associate { it.x to it.ref() }
 
         val module: FunctionModule = moduleFromFiniteTable("cos", TABLE)
-
-        /**
-         * Ожидаемые sin / sec / tan / csc, если cos берётся из [module] (таблица [TABLE]).
-         */
-        object Derived {
-            private val sinM by lazy { Sin(module) }
-            private val secM by lazy { Sec(module) }
-            private val tanM by lazy { Tan(sinM, module) }
-            private val cscM by lazy { Csc(sinM) }
-
-            private val xs: List<Double> by lazy { TABLE.keys.sorted() }
-
-            val sinPairs: List<Pair<Double, Double>> by lazy { xs.map { x -> x to sinM.compute(x)!! } }
-            val secPairs: List<Pair<Double, Double>> by lazy {
-                xs.mapNotNull { x -> secM.compute(x)?.let { x to it } }
-            }
-            val tanPairs: List<Pair<Double, Double>> by lazy {
-                xs.mapNotNull { x -> tanM.compute(x)?.let { x to it } }
-            }
-            val cscPairs: List<Pair<Double, Double>> by lazy {
-                xs.mapNotNull { x -> cscM.compute(x)?.let { x to it } }
-            }
-        }
     }
 
-    private data class LnPoint(
-        val x: Double,
-        val mock: Double?,
-        /**
-         * Ожидание для [com.arekalov.tpolab2.functions.core.LnTest]; null — этот x не гоняем в параметризации ряда
-         * (узел только для мока / log-ветки).
-         */
-        val seriesReference: Double? = null,
-    )
-
     object Ln {
-        private val POINTS: List<LnPoint> = listOf(
-            LnPoint(0.0, null, null), // граница ОДЗ — вне области, мок null
-            LnPoint(1.0, 0.0, 0.0), // ln 1 = 0
-            LnPoint(1.5, 0.4054651081081644, 0.4054651081081644), // x из PiecewiseSystem.LOG_X; эталон для LnTest совпадает с моком
-            LnPoint(2.0, 1.0, null), // основание 2 в LogBase: в таблице «как будто» ln2=1 для целых log₂
-            LnPoint(3.0, 1.0, null), // основание 3 в LogBase: log₃9, log₃27, log₃5.5
-            LnPoint(4.0, 1.3862943611198906, null), // вторая точка PiecewiseSystem.LOG_X; настоящий ln4 в моке для согласованности
-            LnPoint(5.5, 1.5517285850726805, null), // не степень целых оснований; отдельный кейс log₃5.5 в LogBaseTest
-            LnPoint(6.0, 1.791759469228055, null), // третья точка PiecewiseSystem.LOG_X
-            LnPoint(8.0, 3.0, null), // аргумент log₂8: при моке ln8=3, ln2=1 получается log₂8=3
-            LnPoint(9.0, 2.0, null), // аргумент log₃9: при моке ln9=2, ln3=1 получается log₃9=2
-            LnPoint(10.0, 1.0, null), // основание 10: ln10 в знаменателе для log₁₀100 и log₁₀1000
-            LnPoint(27.0, 3.0, null), // 3³; аргумент для log₃27=3 при моке ln27=3, ln3=1
-            LnPoint(100.0, 2.0, 4.605170185988092), // мок ln100=2 для log₁₀100; REFERENCE — настоящий ln(100) для LnTest
-            LnPoint(1000.0, 3.0, null), // аргумент log₁₀1000=3 при моке ln1000=3, ln10=1
-            LnPoint(2.5, 0.9162907318741551, null), // промежуточный x>1 рядом с x=2.0 из LogSystemBranchTest; не дублирует узлы PiecewiseSystem
-            LnPoint(2.6, 1.0, null), // x из LogSystemBranchTest при подмене одного из модулей на AlwaysNull
-            LnPoint(0.25, -1.3862943611198906, -1.3862943611198906), // x∈(0,1): проверка ряда у левой границы ОДЗ (не 0, не 1)
-            LnPoint(2.718281828459045, 1.0, 1.0), // граничный эталон ln(e)=1 без «магии» степеней в моке
-            LnPoint(64.0, 4.1588830833596715, 4.1588830833596715), // 2⁶: проверка ветки масштабирования через ln2 в реализации Ln
-            LnPoint(0.001, -6.907755278982137, -6.907755278982137), // сильное сжатие к 0⁺; устойчивость ряда на малых x
+        val TABLE: Map<Double, Double?> = mapOf(
+            0.0 to null, // граничный случай: x≤0 вне ОДЗ ln; мок null для веток
+            1.0 to 0.0, // ln(1)=0; LnTest, LogBaseTest log₂1
+            1.5 to 0.4054651081081644, // PiecewiseSystem.LOG_X[0], LnTest, LogSystemBranch, MockedBranchesSystemTest
+            2.0 to 0.6931471805599453, // основание LogBase log₂; ln(2)
+            3.0 to 1.0986122886681098, // основание log₃; ln(3)
+            4.0 to 1.3862943611198906, // PiecewiseSystem.LOG_X[1], LogSystemBranch, MockedBranchesSystemTest
+            5.5 to 1.7047480922384423, // LogBaseTest log₃5.5; ln(5.5)
+            6.0 to 1.791759469228055, // PiecewiseSystem.LOG_X[2], MockedBranchesSystemTest
+            8.0 to 2.0794415416798357, // ln(8); LogBaseTest log₂8
+            9.0 to 2.1972245773362196, // ln(9); LogBaseTest log₃9
+            10.0 to 2.302585092994046, // основание log₁₀; ln(10)
+            27.0 to 3.295836866004329, // ln(27); LogBaseTest log₃27
+            100.0 to 4.605170185988092, // ln(100); LnTest, LogBaseTest log₁₀100
+            1000.0 to 6.907755278982137, // ln(1000); LogBaseTest log₁₀1000
+            2.5 to 0.9162907318741551, // LogSystemBranchTest; между узлами PiecewiseSystem
+            2.6 to 0.9555114450274363, // LogSystemBranchTest при подмене модуля на AlwaysNull
+            0.25 to -1.3862943611198906, // LnTest; интервал (0,1)
+            2.718281828459045 to 1.0, // x=e; LnTest
+            64.0 to 4.1588830833596715, // LnTest; масштабирование через ln2
+            0.001 to -6.907755278982137, // LnTest; близко к 0⁺
         )
-
-        val TABLE: Map<Double, Double?> = POINTS.associate { it.x to it.mock }
-
-        /** Только узлы, по которым гоняется ряд в LnTest. */
-        val REFERENCE: Map<Double, Double> =
-            POINTS.mapNotNull { p -> p.seriesReference?.let { p.x to it } }.toMap()
 
         val module: FunctionModule = moduleFromNullableTable("ln", TABLE)
 
-        /** ln(x)/ln(base) по значениям мока — для LogBaseTest. */
+        /** ln(x)/ln(base) по моку — для [com.arekalov.tpolab2.functions.log.LogBaseTest]. */
         fun logBaseExpected(base: Double, x: Double): Double = TABLE.getValue(x)!! / TABLE.getValue(base)!!
     }
 
-    /** Фабрики аргументов для JUnit MethodSource; числа берутся из [Ln]. */
+    /** Фабрики аргументов для JUnit MethodSource; числа из [Ln]. */
     class Sources {
         companion object {
             @JvmStatic
             fun logBaseCases(): Stream<Arguments> =
                 Stream.of(
-                    Arguments.of(2.0, 8.0, Ln.logBaseExpected(2.0, 8.0)), // log₂8 = 3 при согласованном моке ln
-                    Arguments.of(2.0, 1.0, Ln.logBaseExpected(2.0, 1.0)), // log₂1 = 0
-                    Arguments.of(3.0, 9.0, Ln.logBaseExpected(3.0, 9.0)), // log₃9 = 2
-                    Arguments.of(3.0, 27.0, Ln.logBaseExpected(3.0, 27.0)), // log₃27 = 3
-                    Arguments.of(10.0, 100.0, Ln.logBaseExpected(10.0, 100.0)), // log₁₀100 = 2
-                    Arguments.of(10.0, 1000.0, Ln.logBaseExpected(10.0, 1000.0)), // log₁₀1000 = 3
-                    Arguments.of(3.0, 5.5, Ln.logBaseExpected(3.0, 5.5)), // log₃5.5 по таблице ln
+                    Arguments.of(2.0, 8.0, Ln.logBaseExpected(2.0, 8.0)),
+                    Arguments.of(2.0, 1.0, Ln.logBaseExpected(2.0, 1.0)),
+                    Arguments.of(3.0, 9.0, Ln.logBaseExpected(3.0, 9.0)),
+                    Arguments.of(3.0, 27.0, Ln.logBaseExpected(3.0, 27.0)),
+                    Arguments.of(10.0, 100.0, Ln.logBaseExpected(10.0, 100.0)),
+                    Arguments.of(10.0, 1000.0, Ln.logBaseExpected(10.0, 1000.0)),
+                    Arguments.of(3.0, 5.5, Ln.logBaseExpected(3.0, 5.5)),
                 )
         }
     }
 
+    /**
+     * 1/cos на тех же x, что [Cos.TABLE], кроме x=π/2 (полюс при cos=0); [com.arekalov.tpolab2.functions.trig.Sec] над [Cos.module].
+     */
     object Sec {
         val TABLE: Map<Double, Double> = mapOf(
-            -1.5 to 14.136832902969903, // sec на −1.5: |x|>1 слева; не −1 и не −0.5 (у −0.5 tan=0 в стабе — полюс ветки)
-            -1.0 to 1.2, // x из TrigSystemBranchTest для проверки формулы ветки «вручную» по таблице
-            -0.7 to 1.3074592597335937, // −0.7: строго между −1 и −0.5 — без полюса и без около нуля
-            -0.4 to 1.0857044283832387, // −0.4: близко к 0 слева, иной масштаб, чем у −1.5 и −0.7
-            -0.35 to 1.064540183383495, // x из Cos.TABLE без PiecewiseSystem — интеграция и DerivedTrig на том же графе стабов
-            -0.5 to 1.0, // при Tan=0: в формуле ветки деление на tan → null (TrigSystemBranchTest)
-            -0.2 to 1.0, // x из TrigSystemBranchTest при подмене одного модуля на AlwaysNull
+            0.0 to 1.0, // x=0: sec(0)=1; SecTest, узел около нуля
+            0.3 to 1.0467516015380856, // x=0.3: SecTest; промежуточный угол
+            0.5235987755982988 to 1.1547005383792515, // x=π/6: SecTest
+            -1.1 to 2.2046043887173594, // x=-1.1: SecTest; отрицательный аргумент
+            1.5607966601082315 to 100.00499987500726, // cos≈0⁺; SecTest
+            -1.5607966601082315 to 100.00499987500726, // x≈−π/2: симметрия; SecTest
+            2.356194490192345 to -1.4142135623730951, // x=3π/4: SecTest
+            1e-15 to 1.0, // очень малый |x|; SecTest
+            -1.5 to 14.136832902969903, // x=-1.5: MockedBranchesSystemTest, SecTest
+            -0.7 to 1.3074592597335937, // x=-0.7: MockedBranchesSystemTest, SecTest
+            -0.4 to 1.0857044283832387, // x=-0.4: MockedBranchesSystemTest, SecTest
+            -0.35 to 1.064540183383495, // x=-0.35: SystemIntegrationTest, SecTest
+            -1.0 to 1.8508157176809255, // x=-1.0: TrigSystemBranchTest, SystemIntegrationTest, SecTest
+            -0.5 to 1.139493927324549, // x=-0.5: TrigSystemBranchTest, SecTest
+            -0.2 to 1.0203388449411928, // x=-0.2: TrigSystemBranchTest, SystemIntegrationTest, SecTest
+            2.0 * PI to 1.0, // x=2π: SecTest; приведение угла
+            -5.0 to 3.5253200858160887, // x=-5: SecTest, TrigAngleReductionTest
         )
         val module: FunctionModule = moduleFromFiniteTable("sec", TABLE)
     }
 
+    /**
+     * Ожидаемый sin при том же x, что [Cos.TABLE], если cos берётся из [Cos.module] (цепочка [com.arekalov.tpolab2.functions.trig.Sin]).
+     */
     object Sin {
         val TABLE: Map<Double, Double> = mapOf(
-            -1.5 to -0.9974949866040544, // sin на −1.5: |x|>1 слева; не −1 и не −0.5 (полюс tan)
-            -1.0 to 0.3, // x из TrigSystemBranchTest; значение стаба не обязано совпадать с sin(x) — проверка формулы ветки на моках
-            -0.7 to -0.644217687237691, // −0.7: между −1 и −0.5 — «середина» отрезка
-            -0.4 to -0.3894183423086505, // −0.4: близко к 0− — иной масштаб, чем у −1.5 и −0.7
-            -0.35 to 0.41, // доп. x≤0 для SystemIntegrationTest и DerivedTrig по узлам Cos.TABLE
-            -0.5 to 1.0, // пара с Tan=0: знаменатель триг-ветки; в TrigSystemBranchTest при x=−0.5 ожидается null
-            -0.2 to 1.0, // x из TrigSystemBranchTest при подмене модуля на AlwaysNull
+            0.0 to 0.0, // x=0: sin(0)=0; SinTest, узел около нуля
+            0.3 to 0.29552020666133966, // x=0.3: SinTest; промежуточный угол
+            0.5235987755982988 to 0.5, // x=π/6: SinTest
+            -1.1 to -0.8912073600614354, // x=-1.1: SinTest; отрицательный аргумент
+            1.5607966601082315 to 0.9999500037496876, // cos≈0⁺; SinTest
+            -1.5607966601082315 to -0.9999500037496876, // x≈−π/2: симметрия; SinTest
+            2.356194490192345 to 0.7071067811865476, // x=3π/4: SinTest
+            1e-15 to 0.0, // очень малый |x|; SinTest
+            -1.5 to -0.9974949866040544, // x=-1.5: MockedBranchesSystemTest, SinTest
+            -0.7 to -0.644217687237691, // x=-0.7: MockedBranchesSystemTest, SinTest
+            -0.4 to -0.38941834230865047, // x=-0.4: MockedBranchesSystemTest, SinTest
+            -0.35 to -0.3428978074554514, // x=-0.35: SystemIntegrationTest, SinTest
+            -1.0 to -0.8414709848078964, // x=-1.0: TrigSystemBranchTest, SystemIntegrationTest, SinTest
+            -0.5 to -0.47942553860420295, // x=-0.5: TrigSystemBranchTest, SinTest
+            -0.2 to -0.1986693307950612, // x=-0.2: TrigSystemBranchTest, SystemIntegrationTest, SinTest
+            PI / 2 to 1.0, // x=π/2: sin(π/2)=1; SinTest
+            2.0 * PI to 0.0, // x=2π: SinTest; приведение угла
+            -5.0 to 0.9589242746631385, // x=-5: SinTest, TrigAngleReductionTest
         )
         val module: FunctionModule = moduleFromFiniteTable("sin", TABLE)
     }
 
+    /**
+     * 1/sin на тех же x, что [Sin.TABLE], без узлов с sin=0 (полюс csc); согласовано с [Cos.module].
+     */
     object Csc {
         val TABLE: Map<Double, Double> = mapOf(
-            -1.5 to -1.0025113042467249, // csc на −1.5: |x|>1 слева; не −1 и не −0.5 (полюс tan в стабе)
-            -1.0 to 2.0, // x из TrigSystemBranchTest для ручного пересчёта формулы ветки
-            -0.7 to -1.552270326957104, // −0.7: строго между −1 и −0.5 — без полюса и без около нуля
-            -0.4 to -2.567932455547783, // −0.4: близко к 0 слева, иной масштаб, чем у −1.5 и −0.7
-            -0.35 to 2.44, // согласование с остальными триг-стабами на x из Cos.TABLE
-            -0.5 to 1.0, // согласование при Tan=0 и Sec=1 на полюсе ветки
-            -0.2 to 1.0, // x для сценария с AlwaysNull в TrigSystemBranchTest
+            0.3 to 3.3838633618241216, // x=0.3: CscTest
+            0.5235987755982988 to 2.0, // x=π/6: CscTest
+            -1.1 to -1.1220733185272, // x=-1.1: CscTest
+            1.5607966601082315 to 1.0000499987500624, // cos≈0⁺; CscTest
+            -1.5607966601082315 to -1.0000499987500624, // x≈−π/2: CscTest
+            2.356194490192345 to 1.414213562373095, // x=3π/4: CscTest
+            -1.5 to -1.0025113042467249, // x=-1.5: MockedBranchesSystemTest, CscTest
+            -0.7 to -1.552270326957104, // x=-0.7: MockedBranchesSystemTest, CscTest
+            -0.4 to -2.5679324555477834, // x=-0.4: MockedBranchesSystemTest, CscTest
+            -0.35 to -2.916320776212365, // x=-0.35: SystemIntegrationTest, CscTest
+            -1.0 to -1.1883951057781215, // x=-1.0: TrigSystemBranchTest, SystemIntegrationTest, CscTest
+            -0.5 to -2.0858296429334886, // x=-0.5: CscTest
+            -0.2 to -5.033489547672345, // x=-0.2: TrigSystemBranchTest, CscTest
+            PI / 2 to 1.0, // x=π/2: csc(π/2)=1; CscTest
+            -5.0 to 1.0428352127714058, // x=-5: CscTest
         )
         val module: FunctionModule = moduleFromFiniteTable("csc", TABLE)
     }
 
+    /**
+     * sin/cos на узлах [Cos.TABLE]; без x=π/2 (tan не определён при cos=0 в [com.arekalov.tpolab2.functions.trig.Tan]).
+     */
     object Tan {
         val TABLE: Map<Double, Double> = mapOf(
-            -1.5 to -14.10141994717172, // tan на −1.5: знаменатель ветки; «глубокий» минус, не −1/−0.5
-            -1.0 to 0.5, // знаменатель на x из TrigSystemBranchTest
-            -0.7 to -0.8422883804630793, // −0.7: между −1 и −0.5
-            -0.4 to -0.4227932187381618, // −0.4: близко к 0−, другой масштаб
-            -0.35 to 0.43, // знаменатель на доп. x≤0 (Cos.TABLE)
-            -0.5 to 0.0, // специально 0: деление на tan в формуле триг-ветки → null (TrigSystemBranchTest)
-            -0.2 to 1.0, // ненулевой tan на x для теста с AlwaysNull
+            0.0 to 0.0, // x=0: TanTest
+            0.3 to 0.3093362496096233, // x=0.3: TanTest
+            0.5235987755982988 to 0.5773502691896256, // x=π/6: TanTest
+            -1.1 to -1.9647596572486525, // x=-1.1: TanTest
+            1.5607966601082315 to 100.00000000000101, // cos≈0⁺; TanTest
+            -1.5607966601082315 to -100.00000000000101, // x≈−π/2: TanTest
+            2.356194490192345 to -1.0000000000000002, // x=3π/4: TanTest
+            1e-15 to 0.0, // очень малый |x|; TanTest
+            -1.5 to -14.10141994717172, // x=-1.5: MockedBranchesSystemTest, TanTest
+            -0.7 to -0.8422883804630793, // x=-0.7: MockedBranchesSystemTest, TanTest
+            -0.4 to -0.4227932187381617, // x=-0.4: MockedBranchesSystemTest, TanTest
+            -0.35 to -0.3650284948304246, // x=-0.35: SystemIntegrationTest, TanTest
+            -1.0 to -1.5574077246549018, // x=-1.0: TrigSystemBranchTest, SystemIntegrationTest, TanTest
+            -0.5 to -0.5463024898437905, // x=-0.5: TanTest
+            -0.2 to -0.20271003550867245, // x=-0.2: TrigSystemBranchTest, TanTest
+            2.0 * PI to 0.0, // x=2π: TanTest
+            -5.0 to 3.380515006246586, // x=-5: TanTest
         )
         val module: FunctionModule = moduleFromFiniteTable("tan", TABLE)
     }
 
     object Log2 {
         val TABLE: Map<Double, Double> = mapOf(
-            1.5 to 0.5849625007211562, // PiecewiseSystem.LOG_X[0]; участвует в формуле лог-ветки на моках
-            2.0 to 1.0, // log₂(2)=1 согласован с моком ln (таблица «как степени двойки»)
-            2.5 to 1.32, // x не из PiecewiseSystem; расширяет таблицу для интеграции и ветки между 1.5 и 4
-            2.6 to 1.0, // x из LogSystemBranchTest при подмене log2 на AlwaysNull
-            3.0 to 1.0, // узел, на котором log3=0 в стабе → отдельный сценарий лог-ветки
-            4.0 to 2.0, // PiecewiseSystem.LOG_X[1]; log₂4=2 при согласованной таблице
-            6.0 to 2.584962500721156, // PiecewiseSystem.LOG_X[2]; проверка системы и интеграции на x=6
+            1.5 to 0.5849625007211562, // x=1.5: PiecewiseSystem.LOG_X[0], MockedBranchesSystemTest
+            2.0 to 1.0, // x=2.0: LogBaseTest, LogSystemBranch; мок log₂(2)=1 при ln-стабе
+            2.5 to 1.32, // x=2.5: LogSystemBranchTest; между узлами PiecewiseSystem
+            2.6 to 1.0, // x=2.6: LogSystemBranchTest AlwaysNull для log2
+            3.0 to 1.0, // x=3.0: сценарий log3=0 в стабе; LogSystemBranch
+            4.0 to 2.0, // x=4.0: PiecewiseSystem.LOG_X[1], MockedBranchesSystemTest
+            6.0 to 2.584962500721156, // x=6.0: PiecewiseSystem.LOG_X[2], MockedBranchesSystemTest
         )
         val module: FunctionModule = moduleFromFiniteTable("log2", TABLE)
     }
 
     object Log10 {
         val TABLE: Map<Double, Double> = mapOf(
-            1.5 to 0.17609125905568124, // тот же x=1.5, что у Log2/Log3 — единая лог-сетка для ветки
-            2.0 to 2.0, // значение стаба на основании 2 (не обязано быть log₁₀2); согласование с формулой ветки на x=2
-            2.5 to 0.40, // промежуточный x той же сетки, что у Log2/Log3
-            2.6 to 1.0, // x для сценария с подменой другого модуля (ветка на 2.6)
-            3.0 to 1.0, // x, где log3 стаб = 0 — проверка null лог-ветки
-            4.0 to 0.6020599913279623, // вторая точка PiecewiseSystem.LOG_X
-            6.0 to 0.7781512503836435, // третья точка PiecewiseSystem.LOG_X
+            1.5 to 0.17609125905568124, // x=1.5: общая лог-сетка, MockedBranchesSystemTest
+            2.0 to 2.0, // x=2.0: LogSystemBranch; стаб согласован с формулой ветки
+            2.5 to 0.40, // x=2.5: LogSystemBranchTest
+            2.6 to 1.0, // x=2.6: LogSystemBranchTest подмена соседнего модуля
+            3.0 to 1.0, // x=3.0: узел log3=0; проверка null лог-ветки
+            4.0 to 0.6020599913279623, // x=4.0: PiecewiseSystem.LOG_X[1]
+            6.0 to 0.7781512503836435, // x=6.0: PiecewiseSystem.LOG_X[2]
         )
         val module: FunctionModule = moduleFromFiniteTable("log10", TABLE)
     }
 
     object Log3 {
         val TABLE: Map<Double, Double> = mapOf(
-            1.5 to 0.3690702464285425, // знаменатель/множитель в формуле лог-ветки на x=1.5
-            2.0 to 0.5, // стаб на x=2 для той же сетки, что Log2/Log10
-            2.5 to 0.83, // промежуточный x сетки
-            2.6 to 1.0, // x для проверки ветки при подмене соседнего модуля
-            3.0 to 0.0, // специально 0: знаменатель в формуле лог-ветки → null (LogSystemBranchTest)
-            4.0 to 1.2618595071429148, // вторая точка PiecewiseSystem.LOG_X
-            6.0 to 1.6309297535714573, // третья точка PiecewiseSystem.LOG_X
+            1.5 to 0.3690702464285425, // x=1.5: формула лог-ветки, MockedBranchesSystemTest
+            2.0 to 0.5, // x=2.0: LogSystemBranch; общая сетка с Log2/Log10
+            2.5 to 0.83, // x=2.5: LogSystemBranchTest
+            2.6 to 1.0, // x=2.6: LogSystemBranchTest подмена модуля
+            3.0 to 0.0, // граничный случай: log3=0 → знаменатель null в LogSystemBranchTest
+            4.0 to 1.2618595071429148, // x=4.0: PiecewiseSystem.LOG_X[1]
+            6.0 to 1.6309297535714573, // x=6.0: PiecewiseSystem.LOG_X[2]
         )
         val module: FunctionModule = moduleFromFiniteTable("log3", TABLE)
     }
 
     /**
-     * Сетка и эталонные значения кусочной системы на общих стабах
-     * ([MockedBranchesSystemTest] и согласованные точки в таблицах триг/лог).
+     * Сетка и ожидания кусочной системы на стабах
+     * ([com.arekalov.tpolab2.integration.MockedBranchesSystemTest]).
      */
     object PiecewiseSystem {
-        /**
-         * Три точки x≤0 для [MockedBranchesSystemTest]: на каждой проверяется значение кусочной функции на стабах.
-         * Числа выбраны так, чтобы не совпасть с «особым» x=−0.5 (tan=0 в стабе → полюс ветки) и с x=−1 из TrigSystemBranchTest.
-         */
         val TRIG_X: List<Double> = listOf(
-            // −1.5: |x|>1 на отрицательной оси — не −1 и не −0.5; крупнее по модулю, чем −0.7/−0.4, иначе ведут себя sec/tan/csc на стабах
-            -1.5,
-            // −0.7: строго между −1 и −0.5 — «середина» отрезка без полюса tan и без вырождения около 0
-            -0.7,
-            // −0.4: близко к 0 слева, но не микроскопический угол — отличается по масштабу от −1.5 и −0.7
-            -0.4,
+            -1.5, // x=-1.5: MockedBranchesSystemTest; |x|>1, не −0.5 и не −1 (полюса/другие тесты)
+            -0.7, // x=-0.7: MockedBranchesSystemTest; между −1 и −0.5, без tan=0
+            -0.4, // x=-0.4: MockedBranchesSystemTest; близко к 0⁻, иной масштаб
         )
 
-        /** Три разных x>1: совпадают с узлами стабов log* / ln для MockedBranchesSystemTest. */
         val LOG_X: List<Double> = listOf(
-            1.5, // между 1 и «круглыми» степенями; первая точка проверки лог-ветки
-            4.0, // вторая точка; участвует в LogSystemBranch / интеграции
-            6.0, // третья точка; та же сетка, что в таблицах Log2/Log10/Log3
+            1.5, // x=1.5: MockedBranchesSystemTest; первая точка лог-ветки, узлы Ln/Log*
+            4.0, // x=4.0: MockedBranchesSystemTest; вторая точка сетки
+            6.0, // x=6.0: MockedBranchesSystemTest; третья точка сетки
         )
 
-        /** Эталон: подставить таблицы Sec/Sin/Cos/Csc/Tan в формулу триг-ветки и вычислить вручную. */
         val TRIG_EXPECTED: Map<Double, Double> = mapOf(
-            -1.5 to 0.14165204597035536, // эталон ветки при x=−1.5: «глубокая» отрицательная точка, не −1 и не −0.5
-            -0.7 to 1.9520840194111682, // эталон при −0.7: между −1 и −0.5, без полюса tan
-            -0.4 to 3.286283414041996, // эталон при −0.4: близко к 0−, иной масштаб, чем у двух предыдущих
+            -1.5 to 0.14165204597035536, // x=-1.5: ожидание SystemFunction при подстановке стабов триг-ветки
+            -0.7 to 1.9520840194111682, // x=-0.7: то же
+            -0.4 to 3.2862834140419954, // x=-0.4: то же (дрейф double после уточнения sin/csc в стабах)
         )
 
-        /** Эталон: подставить таблицы Log2/Log10/Log3/Ln в формулу лог-ветки и вычислить вручную. */
         val LOG_EXPECTED: Map<Double, Double> = mapOf(
-            1.5 to -0.3024583248558162, // ожидаемое значение системы при x=1.5 на стабах
-            4.0 to -0.182174378463966, // то же при x=4
-            6.0 to 0.21973233290294256, // то же при x=6
+            1.5 to -0.3024583248558162, // x=1.5: ожидание SystemFunction на лог-стабах
+            4.0 to -0.182174378463966, // x=4.0: то же
+            6.0 to 0.21973233290294256, // x=6.0: то же
         )
     }
 
-    /** Мок, всегда null — проверка обрыва цепочки в ветках при подстановке одного из модулей. */
+    /** Мок всегда null — обрыв цепочки в TrigSystemBranch / LogSystemBranch. */
     object AlwaysNull {
         val module: FunctionModule = run {
             val m = mock<FunctionModule>()

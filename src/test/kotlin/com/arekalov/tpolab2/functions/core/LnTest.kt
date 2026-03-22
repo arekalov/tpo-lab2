@@ -16,7 +16,7 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.junit.jupiter.params.provider.ValueSource
 
 /**
- * Проверяется реализация [Ln] (ряд). Эталон — [StubTables.Ln.REFERENCE] (см. описание [StubTables]).
+ * Проверяется реализация [Ln] (ряд). Эталон — положительные узлы [StubTables.Ln.TABLE] (см. [StubTables]).
  */
 @DisplayName("Ln: ряд atanh, масштабирование, ОДЗ")
 class LnTest {
@@ -25,14 +25,15 @@ class LnTest {
         @JvmStatic
         fun lnSeriesReferenceRows(): Stream<Arguments> =
             Stream.of(
-                *StubTables.Ln.REFERENCE.entries
+                *StubTables.Ln.TABLE.entries
+                    .filter { it.value != null && it.key > 0.0 }
                     .sortedBy { it.key }
-                    .map { (x, expected) -> Arguments.of(x, expected) }
+                    .map { (x, expected) -> Arguments.of(x, expected!!) }
                     .toTypedArray(),
             )
     }
 
-    @DisplayName("Значения ln по эталону StubTables.Ln.REFERENCE")
+    @DisplayName("Значения ln по эталону StubTables.Ln.TABLE")
     @ParameterizedTest(name = "x = {0}")
     @MethodSource("lnSeriesReferenceRows")
     fun `ln series matches reference table`(x: Double, expected: Double) {

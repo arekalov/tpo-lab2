@@ -16,7 +16,7 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.junit.jupiter.params.provider.ValueSource
 
 /**
- * Проверяется реализация [Cos] (ряд). Эталон — [StubTables.Cos.REFERENCE] (см. описание [StubTables]).
+ * Проверяется реализация [Cos] (ряд). Эталон — [StubTables.Cos.TABLE] (см. [StubTables]).
  */
 @DisplayName("Cos: ряд Тейлора, периодичность, ОДЗ")
 class CosTest {
@@ -25,14 +25,14 @@ class CosTest {
         @JvmStatic
         fun cosSeriesReferenceRows(): Stream<Arguments> =
             Stream.of(
-                *StubTables.Cos.REFERENCE.entries
+                *StubTables.Cos.TABLE.entries
                     .sortedBy { it.key }
                     .map { (x, expected) -> Arguments.of(x, expected) }
                     .toTypedArray(),
             )
     }
 
-    @DisplayName("Значения cos по эталону StubTables.Cos.REFERENCE")
+    @DisplayName("Значения cos по эталону StubTables.Cos.TABLE")
     @ParameterizedTest(name = "x = {0}")
     @MethodSource("cosSeriesReferenceRows")
     fun `cos series matches reference table`(x: Double, expected: Double) {

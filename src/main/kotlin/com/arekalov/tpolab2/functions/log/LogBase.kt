@@ -2,7 +2,16 @@ package com.arekalov.tpolab2.functions.log
 
 import com.arekalov.tpolab2.functions.FunctionModule
 
-/** log_base(x) = ln(x) / ln(base), x > 0, base > 0, base ≠ 1. */
+/**
+ * Логарифм по произвольному основанию **log_base(x)** только через модуль [ln] (по условию лабораторной).
+ *
+ * **Формула:** `log_base(x) = ln(x) / ln(base)` при x > 0, base > 0, base ≠ 1.
+ *
+ * **Конструктор:** один раз считает `ln(base)` и сохраняет в знаменатель [lnBase]. Если `ln(base)` не определён
+ * (`null`) или равен нулю — исключение: иначе деление в [compute] было бы некорректным.
+ *
+ * **compute:** `ln.compute(x)`; при `null` (x вне ОДЗ ln) возвращает `null`, иначе `lnx / lnBase`.
+ */
 class LogBase(
     private val ln: FunctionModule,
     private val base: Double,

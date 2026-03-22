@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
@@ -38,12 +39,15 @@ class TrigSystemBranchTest {
     @DisplayName("Если tan(x) = 0 (знаменатель), результат не определён — null")
     fun `undefined when tan is zero`() {
         val x = -0.5
+        val tanZero = mock<FunctionModule>()
+        whenever(tanZero.moduleId).thenReturn("tan")
+        whenever(tanZero.compute(eq(x))).thenReturn(0.0)
         val branch = TrigSystemBranch(
             StubTables.Sec.module,
             StubTables.Sin.module,
             StubTables.Cos.module,
             StubTables.Csc.module,
-            StubTables.Tan.module,
+            tanZero,
         )
         assertNull(branch.compute(x))
     }

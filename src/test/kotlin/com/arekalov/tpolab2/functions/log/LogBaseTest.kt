@@ -8,16 +8,18 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import java.util.stream.Stream
 
-/** [Ln.module] — [StubTables.Ln]; кейсы — [StubTables.Sources.logBaseCases]. */
 @DisplayName("LogBase: инициализация и log_base(x), ln — мок")
 class LogBaseTest {
 
     private val lnModule: FunctionModule = StubTables.Ln.module
+
 
     @DisplayName("log_base(x): целые степени и log_b(1) = 0 (ожидание из таблицы ln-стаба)")
     @ParameterizedTest(name = "основание {0}, x = {1} → {2}")
