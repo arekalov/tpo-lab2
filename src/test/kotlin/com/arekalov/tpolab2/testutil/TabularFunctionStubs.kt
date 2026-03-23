@@ -299,8 +299,6 @@ object StubTables {
         val TABLE: Map<Double, Double?> = mapOf(
             0.000_000_1 to 178.8925723,
             0.0 to null,
-            1.0 to 0.0,
-            3.0 to null,
             4.93341 to 0.0,
             100.0 to 8.68254219356,
             1_000_000.0 to 105.773900858,
@@ -311,9 +309,7 @@ object StubTables {
     object TrigBranch {
         val TABLE: Map<Double, Double?> = mapOf(
             0.0 to null,
-            -PI to null,
             -PI / 2 to null,
-            1.0 to null,
             -1.0 to 1.1823949218,
             -PI / 4 to 1.70710678119,
             -PI / 6 to 2.59807621135,
